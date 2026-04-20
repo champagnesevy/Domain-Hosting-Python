@@ -15,6 +15,7 @@ export interface UpdateStudentRequest {
   block?: string;
   course?: string;
   room?: string;
+  time?: string;
   status?: UpdateStudentRequestStatus;
   remarks?: string;
 }

@@ -220,6 +220,8 @@ components:
           type: string
         room:
           type: string
+        time:
+          type: string
         status:
           type: string
           enum: [IN, OUT, "N/A"]
@@ -243,6 +245,8 @@ components:
         course:
           type: string
         room:
+          type: string
+        time:
           type: string
         status:
           type: string

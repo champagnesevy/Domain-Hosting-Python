@@ -51,6 +51,7 @@ export const CreateStudentBody = zod.object({
   block: zod.string().optional(),
   course: zod.string().optional(),
   room: zod.string().optional(),
+  time: zod.string().optional(),
   status: zod.enum(["IN", "OUT", "N/A"]).optional(),
   remarks: zod.string().optional(),
 });
@@ -92,6 +93,7 @@ export const UpdateStudentBody = zod.object({
   block: zod.string().optional(),
   course: zod.string().optional(),
   room: zod.string().optional(),
+  time: zod.string().optional(),
   status: zod.enum(["IN", "OUT", "N/A"]).optional(),
   remarks: zod.string().optional(),
 });

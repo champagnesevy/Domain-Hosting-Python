@@ -91,6 +91,7 @@ export default function Dashboard() {
       block: formData.get("block") as string,
       course: formData.get("course") as string,
       room: formData.get("room") as string,
+      time: formData.get("time") as string,
       status: formData.get("status") as UpdateStudentRequestStatus,
       remarks: formData.get("remarks") as string,
     };
@@ -406,9 +407,15 @@ export default function Dashboard() {
                   <Input id="course" name="course" defaultValue={studentDetails?.course ?? editingStudent?.course} required disabled={isLoadingDetails} />
                 </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="room">Room</Label>
-                <Input id="room" name="room" defaultValue={studentDetails?.room ?? editingStudent?.room} required disabled={isLoadingDetails} />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="room">Room</Label>
+                  <Input id="room" name="room" defaultValue={studentDetails?.room ?? editingStudent?.room} required disabled={isLoadingDetails} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="time">Time</Label>
+                  <Input id="time" name="time" placeholder="e.g. 9:00 AM" defaultValue={studentDetails?.time ?? editingStudent?.time} disabled={isLoadingDetails} />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">

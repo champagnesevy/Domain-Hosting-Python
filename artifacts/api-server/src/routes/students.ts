@@ -65,11 +65,22 @@ router.post("/", async (req, res) => {
   }
 
   const now = new Date();
-  const timeStr = now.toLocaleTimeString("en-US", {
+  const autoTime = now.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
   });
+
+  const providedTime = parsed.data.time?.trim();
+  const chosenStatus = parsed.data.status ?? "N/A";
+  let timeValue: string;
+  if (providedTime && providedTime.length > 0) {
+    timeValue = providedTime;
+  } else if (chosenStatus === "IN") {
+    timeValue = autoTime;
+  } else {
+    timeValue = "N/A";
+  }
 
   const [created] = await db
     .insert(studentsTable)
@@ -81,8 +92,8 @@ router.post("/", async (req, res) => {
       block: parsed.data.block ?? "TBD",
       course: parsed.data.course ?? "TBD",
       room: parsed.data.room ?? "TBD",
-      time: parsed.data.status === "IN" ? timeStr : "N/A",
-      status: parsed.data.status ?? "N/A",
+      time: timeValue,
+      status: chosenStatus,
       remarks: parsed.data.remarks ?? "NEWLY REGISTERED",
     })
     .returning();
@@ -170,20 +181,14 @@ router.put("/:id", async (req, res) => {
   if (data.block !== undefined) updateValues.block = data.block;
   if (data.course !== undefined) updateValues.course = data.course;
   if (data.room !== undefined) updateValues.room = data.room;
-  if (data.status !== undefined) {
-    updateValues.status = data.status;
-    if (data.status === "IN") {
-      const now = new Date();
-      updateValues.time = now.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
-    } else {
-      updateValues.time = "N/A";
-    }
-  }
   if (data.remarks !== undefined) updateValues.remarks = data.remarks;
+  if (data.status !== undefined) updateValues.status = data.status;
+
+  // Time: if explicitly provided, use it. Otherwise if status changes,
+  // set N/A for OUT, keep existing for IN (admin can edit time manually).
+  if (data.time !== undefined) {
+    updateValues.time = data.time.trim() || "N/A";
+  }
 
   const [updated] = await db
     .update(studentsTable)

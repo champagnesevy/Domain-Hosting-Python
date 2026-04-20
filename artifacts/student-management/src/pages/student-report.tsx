@@ -3,7 +3,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCreateStudent } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ClipboardCheck, User, BookOpen, Hash, MapPin, Activity, GraduationCap, CheckCircle2 } from "lucide-react";
+import {
+  Loader2,
+  ClipboardCheck,
+  User,
+  BookOpen,
+  Hash,
+  MapPin,
+  Activity,
+  GraduationCap,
+  CheckCircle2,
+  Lock,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -14,7 +27,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
 
 const formSchema = z.object({
@@ -37,9 +56,128 @@ const defaultValues: FormValues = {
   remarks: "PRESENT",
 };
 
+function PinGate({ onUnlock }: { onUnlock: () => void }) {
+  const { toast } = useToast();
+  const [pin, setPin] = useState("");
+  const [showPin, setShowPin] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [shake, setShake] = useState(false);
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pin.trim()) return;
+    setChecking(true);
+    try {
+      const res = await fetch("/api/verify-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: pin.trim() }),
+      });
+      if (res.ok) {
+        onUnlock();
+      } else {
+        setShake(true);
+        setTimeout(() => setShake(false), 600);
+        setPin("");
+        toast({
+          title: "Incorrect PIN",
+          description: "Please check your PIN and try again.",
+          variant: "destructive",
+        });
+      }
+    } catch {
+      toast({ title: "Connection error. Please try again.", variant: "destructive" });
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <header className="bg-white border-b border-slate-200 shadow-sm">
+        <div className="max-w-2xl mx-auto px-6 h-16 flex items-center gap-3">
+          <GraduationCap className="h-6 w-6 text-primary" />
+          <span className="font-semibold text-slate-800 text-lg tracking-tight">
+            Student Attendance Report
+          </span>
+        </div>
+      </header>
+
+      <main className="flex-1 flex items-center justify-center p-6">
+        <div
+          className={`w-full max-w-sm transition-all ${shake ? "animate-[shake_0.5s_ease-in-out]" : ""}`}
+          style={
+            shake
+              ? { animation: "shake 0.5s ease-in-out" }
+              : {}
+          }
+        >
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+            <div className="bg-primary/5 border-b border-slate-100 px-6 py-5 flex flex-col items-center text-center">
+              <div className="rounded-full bg-primary/10 p-3 mb-3">
+                <Lock className="h-6 w-6 text-primary" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900">Enter Class PIN</h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Enter the PIN provided by your professor to access the form.
+              </p>
+            </div>
+
+            <form onSubmit={handleVerify} className="p-6 space-y-4">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700">PIN Code</label>
+                <div className="relative">
+                  <Input
+                    type={showPin ? "text" : "password"}
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value)}
+                    placeholder="Enter PIN"
+                    className="pr-10 text-center text-lg tracking-widest font-mono"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    onClick={() => setShowPin((v) => !v)}
+                    tabIndex={-1}
+                  >
+                    {showPin ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full gap-2"
+                disabled={checking || !pin.trim()}
+              >
+                {checking ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Lock className="h-4 w-4" />
+                )}
+                {checking ? "Verifying..." : "Unlock Form"}
+              </Button>
+            </form>
+          </div>
+
+          <p className="text-center text-xs text-slate-400 mt-4">
+            Student Management System — For student use only
+          </p>
+        </div>
+      </main>
+    </div>
+  );
+}
+
 export default function StudentReport() {
   const { toast } = useToast();
   const createStudent = useCreateStudent();
+  const [unlocked, setUnlocked] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const form = useForm<FormValues>({
@@ -52,20 +190,27 @@ export default function StudentReport() {
   };
 
   const onSubmit = (data: FormValues) => {
-    createStudent.mutate({ data }, {
-      onSuccess: () => {
-        setSubmitted(true);
-        form.reset(defaultValues);
+    createStudent.mutate(
+      { data },
+      {
+        onSuccess: () => {
+          setSubmitted(true);
+          form.reset(defaultValues);
+        },
+        onError: (err) => {
+          toast({
+            title: "Submission failed",
+            description: (err as any)?.message || "An error occurred. Please try again.",
+            variant: "destructive",
+          });
+        },
       },
-      onError: (err) => {
-        toast({
-          title: "Submission failed",
-          description: (err as any)?.message || "An error occurred. Please try again.",
-          variant: "destructive",
-        });
-      },
-    });
+    );
   };
+
+  if (!unlocked) {
+    return <PinGate onUnlock={() => setUnlocked(true)} />;
+  }
 
   if (submitted) {
     return (
@@ -77,11 +222,10 @@ export default function StudentReport() {
             </div>
           </div>
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Report Submitted</h2>
-          <p className="text-slate-500 mb-8">Your attendance report has been recorded successfully.</p>
-          <Button
-            onClick={() => setSubmitted(false)}
-            className="w-full gap-2"
-          >
+          <p className="text-slate-500 mb-8">
+            Your attendance report has been recorded successfully.
+          </p>
+          <Button onClick={() => setSubmitted(false)} className="w-full gap-2">
             <ClipboardCheck className="h-4 w-4" />
             Submit Another Report
           </Button>
@@ -92,20 +236,22 @@ export default function StudentReport() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Header */}
       <header className="bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-2xl mx-auto px-6 h-16 flex items-center gap-3">
           <GraduationCap className="h-6 w-6 text-primary" />
-          <span className="font-semibold text-slate-800 text-lg tracking-tight">Student Attendance Report</span>
+          <span className="font-semibold text-slate-800 text-lg tracking-tight">
+            Student Attendance Report
+          </span>
         </div>
       </header>
 
-      {/* Main content */}
       <main className="flex-1 flex items-start justify-center p-6 pt-10">
         <div className="w-full max-w-2xl">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-slate-900">Daily Attendance Report</h1>
-            <p className="text-slate-500 mt-1 text-sm">Please fill in all required fields and submit your attendance information.</p>
+            <p className="text-slate-500 mt-1 text-sm">
+              Please fill in all required fields and submit your attendance information.
+            </p>
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -116,19 +262,26 @@ export default function StudentReport() {
 
             <div className="p-6">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                  
-                  {/* Full Name */}
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-5"
+                >
                   <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name <span className="text-rose-500">*</span></FormLabel>
+                        <FormLabel>
+                          Full Name <span className="text-rose-500">*</span>
+                        </FormLabel>
                         <FormControl>
                           <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                            <Input placeholder="e.g. Juan dela Cruz" className="pl-9" {...field} />
+                            <Input
+                              placeholder="e.g. Juan dela Cruz"
+                              className="pl-9"
+                              {...field}
+                            />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -136,18 +289,23 @@ export default function StudentReport() {
                     )}
                   />
 
-                  {/* Block and Course Code */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <FormField
                       control={form.control}
                       name="block"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Block <span className="text-rose-500">*</span></FormLabel>
+                          <FormLabel>
+                            Block <span className="text-rose-500">*</span>
+                          </FormLabel>
                           <FormControl>
                             <div className="relative">
                               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                              <Input placeholder="e.g. 4.2 BSIT" className="pl-9" {...field} />
+                              <Input
+                                placeholder="e.g. 4.2 BSIT"
+                                className="pl-9"
+                                {...field}
+                              />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -160,11 +318,17 @@ export default function StudentReport() {
                       name="course"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Course Code <span className="text-rose-500">*</span></FormLabel>
+                          <FormLabel>
+                            Course Code <span className="text-rose-500">*</span>
+                          </FormLabel>
                           <FormControl>
                             <div className="relative">
                               <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                              <Input placeholder="e.g. PC29" className="pl-9" {...field} />
+                              <Input
+                                placeholder="e.g. PC29"
+                                className="pl-9"
+                                {...field}
+                              />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -173,17 +337,22 @@ export default function StudentReport() {
                     />
                   </div>
 
-                  {/* Room Number */}
                   <FormField
                     control={form.control}
                     name="room"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Room Number <span className="text-rose-500">*</span></FormLabel>
+                        <FormLabel>
+                          Room Number <span className="text-rose-500">*</span>
+                        </FormLabel>
                         <FormControl>
                           <div className="relative">
                             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                            <Input placeholder="e.g. 403" className="pl-9" {...field} />
+                            <Input
+                              placeholder="e.g. 403"
+                              className="pl-9"
+                              {...field}
+                            />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -191,14 +360,15 @@ export default function StudentReport() {
                     )}
                   />
 
-                  {/* Status and Remarks */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-slate-100">
                     <FormField
                       control={form.control}
                       name="status"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Status <span className="text-rose-500">*</span></FormLabel>
+                          <FormLabel>
+                            Status <span className="text-rose-500">*</span>
+                          </FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger className="w-full">
@@ -224,7 +394,9 @@ export default function StudentReport() {
                       name="remarks"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Remarks <span className="text-rose-500">*</span></FormLabel>
+                          <FormLabel>
+                            Remarks <span className="text-rose-500">*</span>
+                          </FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger className="w-full">
@@ -244,7 +416,6 @@ export default function StudentReport() {
                     />
                   </div>
 
-                  {/* Buttons */}
                   <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
                     <Button
                       type="button"

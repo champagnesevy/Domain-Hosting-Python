@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Users, UserPlus, FileText, GraduationCap, ExternalLink } from "lucide-react";
+import { Users, UserPlus, FileText, GraduationCap, ExternalLink, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LayoutProps {
@@ -50,6 +50,13 @@ export function Layout({ children }: LayoutProps) {
               User Report Form
             </div>
           </Link>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-sidebar-border/40 bg-sidebar-accent/20">
+            <Lock className="h-3.5 w-3.5 text-sidebar-foreground/60 shrink-0" />
+            <div>
+              <div className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wide font-medium">Student Report PIN</div>
+              <div className="text-sm font-bold text-sidebar-foreground/80 tracking-widest font-mono">1234</div>
+            </div>
+          </div>
           <div className="text-xs text-sidebar-foreground/50 font-medium px-2">
             Student Management System v1.0
           </div>

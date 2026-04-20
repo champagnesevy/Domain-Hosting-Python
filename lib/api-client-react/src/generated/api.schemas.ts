@@ -49,6 +49,7 @@ export interface CreateStudentRequest {
   block?: string;
   course?: string;
   room?: string;
+  time?: string;
   status?: CreateStudentRequestStatus;
   remarks?: string;
 }
@@ -70,6 +71,7 @@ export interface UpdateStudentRequest {
   block?: string;
   course?: string;
   room?: string;
+  time?: string;
   status?: UpdateStudentRequestStatus;
   remarks?: string;
 }
