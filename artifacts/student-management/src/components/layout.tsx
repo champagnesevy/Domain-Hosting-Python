@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Users, UserPlus, FileText, GraduationCap } from "lucide-react";
+import { Users, UserPlus, FileText, GraduationCap, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LayoutProps {
@@ -43,7 +43,13 @@ export function Layout({ children }: LayoutProps) {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-sidebar-border/50">
+        <div className="p-4 border-t border-sidebar-border/50 space-y-3">
+          <Link href="/student-report">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all cursor-pointer border border-sidebar-border/40">
+              <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+              User Report Form
+            </div>
+          </Link>
           <div className="text-xs text-sidebar-foreground/50 font-medium px-2">
             Student Management System v1.0
           </div>

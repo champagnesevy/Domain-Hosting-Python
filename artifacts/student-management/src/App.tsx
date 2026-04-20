@@ -1,4 +1,4 @@
-import { useLocation, Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,20 +6,29 @@ import { Layout } from "@/components/layout";
 import Dashboard from "@/pages/dashboard";
 import Register from "@/pages/register";
 import Report from "@/pages/report";
+import StudentReport from "@/pages/student-report";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
 
 function Router() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/register" component={Register} />
-        <Route path="/report" component={Report} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <Switch>
+      {/* Standalone user-facing page — no admin sidebar */}
+      <Route path="/student-report" component={StudentReport} />
+
+      {/* Admin routes — wrapped in Layout with sidebar */}
+      <Route>
+        <Layout>
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/register" component={Register} />
+            <Route path="/report" component={Report} />
+            <Route component={NotFound} />
+          </Switch>
+        </Layout>
+      </Route>
+    </Switch>
   );
 }
 

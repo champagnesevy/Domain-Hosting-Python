@@ -5,12 +5,13 @@ import {
   useDeleteStudent,
   useUpdateStudent,
   useGetStudent,
+  useCreateStudent,
   getListStudentsQueryKey,
   getGetStudentSummaryQueryKey,
   getGetStudentQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Edit2, Trash2, Loader2, BookOpen, Clock, X, Check, Filter, Users, UserCheck, UserX, AlarmClock } from "lucide-react";
+import { Search, Edit2, Trash2, Loader2, BookOpen, Clock, X, Check, Filter, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,6 +46,8 @@ export default function Dashboard() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ListStudentsStatus | "ALL">("ALL");
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addRemarks, setAddRemarks] = useState("PRESENT");
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -63,10 +66,10 @@ export default function Dashboard() {
 
   const deleteStudent = useDeleteStudent();
   const updateStudent = useUpdateStudent();
+  const createStudent = useCreateStudent();
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to remove this record?")) return;
-    
     deleteStudent.mutate({ id }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
@@ -82,7 +85,6 @@ export default function Dashboard() {
   const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingStudent) return;
-
     const formData = new FormData(e.currentTarget);
     const data = {
       name: formData.get("name") as string,
@@ -92,7 +94,6 @@ export default function Dashboard() {
       status: formData.get("status") as UpdateStudentRequestStatus,
       remarks: formData.get("remarks") as string,
     };
-
     updateStudent.mutate({ id: editingStudent.id, data }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
@@ -102,6 +103,47 @@ export default function Dashboard() {
       },
       onError: () => {
         toast({ title: "Failed to update record", variant: "destructive" });
+      }
+    });
+  };
+
+  const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const name = (formData.get("name") as string).trim();
+    const block = (formData.get("block") as string).trim();
+    const room = (formData.get("room") as string).trim();
+    const time = (formData.get("time") as string).trim();
+    const remarks = addRemarks;
+
+    if (!name) {
+      toast({ title: "Full name is required", variant: "destructive" });
+      return;
+    }
+
+    const status = remarks === "ABSENT" ? "OUT" : "IN";
+
+    createStudent.mutate({
+      data: {
+        name,
+        block: block || "TBD",
+        room: room || "TBD",
+        course: "TBD",
+        time: time || "N/A",
+        status,
+        remarks,
+      }
+    }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetStudentSummaryQueryKey() });
+        setAddOpen(false);
+        setAddRemarks("PRESENT");
+        (e.target as HTMLFormElement).reset();
+        toast({ title: "Student added successfully" });
+      },
+      onError: () => {
+        toast({ title: "Failed to add student", variant: "destructive" });
       }
     });
   };
@@ -194,18 +236,27 @@ export default function Dashboard() {
               className="pl-9 border-slate-200 bg-white"
             />
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="h-4 w-4 text-slate-400" />
-            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
-              <SelectTrigger className="w-[140px] border-slate-200 bg-white">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Status</SelectItem>
-                <SelectItem value="IN">In</SelectItem>
-                <SelectItem value="OUT">Out</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-slate-400" />
+              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+                <SelectTrigger className="w-[140px] border-slate-200 bg-white">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Status</SelectItem>
+                  <SelectItem value="IN">In</SelectItem>
+                  <SelectItem value="OUT">Out</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={() => setAddOpen(true)}
+              className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Add Student
+            </Button>
           </div>
         </div>
 
@@ -279,6 +330,61 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Add Student Dialog */}
+      <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) setAddRemarks("PRESENT"); }}>
+        <DialogContent className="sm:max-w-[480px]">
+          <form onSubmit={handleAdd}>
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold text-slate-900">Add Student</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="add-name">Full Name <span className="text-rose-500">*</span></Label>
+                <Input id="add-name" name="name" placeholder="e.g. Juan dela Cruz" required />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="add-block">Block</Label>
+                  <Input id="add-block" name="block" placeholder="e.g. 4.2 BSIT" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="add-room">Room Number</Label>
+                  <Input id="add-room" name="room" placeholder="e.g. 403" />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="add-time">Time</Label>
+                <Input id="add-time" name="time" placeholder="e.g. 9:00 AM" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="add-remarks">Remarks</Label>
+                <Select value={addRemarks} onValueChange={setAddRemarks}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select remarks" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PRESENT">PRESENT</SelectItem>
+                    <SelectItem value="ABSENT">ABSENT</SelectItem>
+                    <SelectItem value="LATE">LATE</SelectItem>
+                    <SelectItem value="NEWLY REGISTERED">NEWLY REGISTERED</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => { setAddOpen(false); setAddRemarks("PRESENT"); }}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createStudent.isPending}>
+                {createStudent.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Add Student
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Student Dialog */}
       <Dialog open={!!editingStudent} onOpenChange={(open) => !open && setEditingStudent(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <form onSubmit={handleUpdate}>
