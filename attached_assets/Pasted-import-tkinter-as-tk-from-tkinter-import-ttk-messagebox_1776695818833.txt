@@ -1,0 +1,213 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+
+class StudentApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Student Management System")
+        self.geometry("900x600")
+        self.configure(bg="gray")
+
+        # Mock Database (In-memory)
+        self.students = [
+            {"name": "Alex Salazar", "block": "4.2 BSIT", "course": "PC29", "room": "403", "time": "9:51 AM", "status": "IN", "remarks": "PRESENT"},
+            {"name": "Carl Kevin Bucayo", "block": "4.2 BSIT", "course": "PC29", "room": "403", "time": "N/A", "status": "OUT", "remarks": "ABSENT"},
+            {"name": "Jose Rizal Idol", "block": "4.2 BSIT", "course": "PC29", "room": "403", "time": "10:15 AM", "status": "IN", "remarks": "LATE"},
+        ]
+
+        # Style configuration
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("TFrame", background="#9e9e9e")
+        style.configure("TLabel", background="#9e9e9e", font=("Arial", 10, "bold"))
+        style.configure("Header.TLabel", font=("Arial", 24, "bold"))
+
+        # Setup Notebook (Tabs)
+        self.notebook = ttk.Notebook(self)
+        self.notebook.pack(fill="both", expand=True, padx=10, pady=10)
+
+        self.tab_dashboard = ttk.Frame(self.notebook)
+        self.tab_registration = ttk.Frame(self.notebook)
+        self.tab_report = ttk.Frame(self.notebook)
+
+        self.notebook.add(self.tab_dashboard, text="1. Dashboard")
+        self.notebook.add(self.tab_registration, text="2. Registrations")
+        self.notebook.add(self.tab_report, text="3. Student Report")
+
+        self.build_dashboard()
+        self.build_registration()
+        self.build_report()
+
+    # ==========================
+    # 1. DASHBOARD TAB
+    # ==========================
+    def build_dashboard(self):
+        # Top Controls
+        top_frame = ttk.Frame(self.tab_dashboard)
+        top_frame.pack(fill="x", padx=20, pady=10)
+        
+        ttk.Label(top_frame, text="DASHBOARD", style="Header.TLabel").pack(anchor="w", pady=(0, 10))
+
+        ttk.Label(top_frame, text="SEARCH BAR").pack(side="left", padx=(0, 5))
+        self.search_entry = ttk.Entry(top_frame, width=20)
+        self.search_entry.pack(side="left", padx=(0, 20))
+
+        ttk.Label(top_frame, text="FILTER").pack(side="left", padx=(0, 5))
+        self.filter_entry = ttk.Entry(top_frame, width=20)
+        self.filter_entry.pack(side="left")
+
+        # Treeview (Table)
+        columns = ("name", "block", "course", "room", "time", "status", "remarks")
+        self.tree = ttk.Treeview(self.tab_dashboard, columns=columns, show="headings", height=15)
+        
+        # Define Headings
+        for col in columns:
+            self.tree.heading(col, text=col.replace("_", " ").upper())
+            self.tree.column(col, anchor="center", width=120)
+        
+        self.tree.pack(fill="both", expand=True, padx=20, pady=10)
+        self.refresh_table()
+
+        # Bottom Buttons
+        btn_frame = ttk.Frame(self.tab_dashboard)
+        btn_frame.pack(fill="x", padx=20, pady=10)
+        
+        # ✓ Button (Edit/Update Placeholder)
+        btn_check = tk.Button(btn_frame, text="✓", font=("Arial", 16), bg="gray", width=5, command=self.edit_student)
+        btn_check.pack(side="right", padx=10)
+
+        # X Button (Delete)
+        btn_x = tk.Button(btn_frame, text="X", font=("Arial", 16), fg="red", bg="gray", width=5, command=self.delete_student)
+        btn_x.pack(side="right", padx=10)
+
+    def refresh_table(self):
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+        for idx, student in enumerate(self.students):
+            self.tree.insert("", "end", iid=idx, values=(
+                student["name"], student["block"], student["course"], 
+                student["room"], student.get("time", "N/A"), 
+                student.get("status", "N/A"), student.get("remarks", "N/A")
+            ))
+
+    def delete_student(self):
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("Warning", "Please select a record to delete.")
+            return
+        
+        index = int(selected[0])
+        del self.students[index]
+        self.refresh_table()
+        messagebox.showinfo("Success", "Record deleted successfully.")
+
+    def edit_student(self):
+        messagebox.showinfo("Info", "To edit, please select a record and re-submit via the Student Report tab.")
+
+    # ==========================
+    # 2. REGISTRATIONS TAB
+    # ==========================
+    def build_registration(self):
+        frame = ttk.Frame(self.tab_registration)
+        frame.pack(expand=True)
+
+        ttk.Label(frame, text="REGISTRATIONS", style="Header.TLabel").pack(pady=(0, 20))
+
+        # Form Fields
+        self.reg_entries = {}
+        fields = ["FULLNAME", "EMAIL", "PHONE NUMBER", "YEAR LEVEL"]
+        
+        for field in fields:
+            ttk.Label(frame, text=field).pack()
+            entry = ttk.Entry(frame, width=40, font=("Arial", 12))
+            entry.pack(pady=(0, 15))
+            self.reg_entries[field] = entry
+
+        # Buttons
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(pady=20)
+
+        btn_cancel = tk.Button(btn_frame, text="X", font=("Arial", 16), fg="red", bg="white", width=5, command=self.clear_registration)
+        btn_cancel.pack(side="left", padx=20)
+
+        btn_submit = tk.Button(btn_frame, text="✓", font=("Arial", 16), bg="white", width=5, command=self.submit_registration)
+        btn_submit.pack(side="right", padx=20)
+
+    def clear_registration(self):
+        for entry in self.reg_entries.values():
+            entry.delete(0, tk.END)
+
+    def submit_registration(self):
+        name = self.reg_entries["FULLNAME"].get()
+        if not name:
+            messagebox.showerror("Error", "Fullname is required!")
+            return
+        
+        # Adding to the mock database with default dashbaord values
+        self.students.append({
+            "name": name, "block": "TBD", "course": "TBD", 
+            "room": "TBD", "time": "N/A", "status": "N/A", "remarks": "NEWLY REGISTERED"
+        })
+        self.refresh_table()
+        self.clear_registration()
+        messagebox.showinfo("Success", "Registration Submitted!")
+        self.notebook.select(self.tab_dashboard)
+
+    # ==========================
+    # 3. STUDENT REPORT TAB
+    # ==========================
+    def build_report(self):
+        frame = ttk.Frame(self.tab_report)
+        frame.pack(expand=True)
+
+        ttk.Label(frame, text="STUDENT REPORT", style="Header.TLabel").pack(pady=(0, 20))
+
+        # Form Fields
+        self.rep_entries = {}
+        fields = ["FULLNAME", "Block", "Course code", "Room#", "Status", "Remarks"]
+        
+        for field in fields:
+            ttk.Label(frame, text=field).pack()
+            entry = ttk.Entry(frame, width=40, font=("Arial", 12))
+            entry.pack(pady=(0, 10))
+            self.rep_entries[field] = entry
+
+        # Buttons
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(pady=20)
+
+        btn_cancel = tk.Button(btn_frame, text="CANCEL", font=("Arial", 12, "bold"), bg="white", width=10, command=self.clear_report)
+        btn_cancel.pack(side="left", padx=20)
+
+        btn_submit = tk.Button(btn_frame, text="SUBMIT", font=("Arial", 12, "bold"), bg="white", width=10, command=self.submit_report)
+        btn_submit.pack(side="right", padx=20)
+
+    def clear_report(self):
+        for entry in self.rep_entries.values():
+            entry.delete(0, tk.END)
+
+    def submit_report(self):
+        name = self.rep_entries["FULLNAME"].get()
+        if not name:
+            messagebox.showerror("Error", "Fullname is required!")
+            return
+            
+        new_record = {
+            "name": name,
+            "block": self.rep_entries["Block"].get(),
+            "course": self.rep_entries["Course code"].get(),
+            "room": self.rep_entries["Room#"].get(),
+            "time": "Current", # Mock time
+            "status": self.rep_entries["Status"].get(),
+            "remarks": self.rep_entries["Remarks"].get()
+        }
+        
+        self.students.append(new_record)
+        self.refresh_table()
+        self.clear_report()
+        messagebox.showinfo("Success", "Student Report Submitted!")
+        self.notebook.select(self.tab_dashboard)
+
+if __name__ == "__main__":
+    app = StudentApp()
+    app.mainloop()
