@@ -3,10 +3,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
+import { AdminLayout } from "@/components/admin-layout";
 import Dashboard from "@/pages/dashboard";
 import Register from "@/pages/register";
 import Report from "@/pages/report";
 import StudentReport from "@/pages/student-report";
+import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -14,10 +16,17 @@ const queryClient = new QueryClient();
 function Router() {
   return (
     <Switch>
-      {/* Standalone user-facing page — no admin sidebar */}
+      {/* Standalone student-facing page — no admin sidebar */}
       <Route path="/student-report" component={StudentReport} />
 
-      {/* Admin routes — wrapped in Layout with sidebar */}
+      {/* Admin-only dashboard — limited to name management */}
+      <Route path="/admin">
+        <AdminLayout>
+          <AdminDashboard />
+        </AdminLayout>
+      </Route>
+
+      {/* Super admin routes — full access with sidebar */}
       <Route>
         <Layout>
           <Switch>

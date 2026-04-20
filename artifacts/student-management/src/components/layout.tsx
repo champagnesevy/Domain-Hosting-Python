@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Users, UserPlus, FileText, GraduationCap, ExternalLink, Lock } from "lucide-react";
+import { Users, UserPlus, GraduationCap, ExternalLink, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LayoutProps {
@@ -12,7 +12,6 @@ export function Layout({ children }: LayoutProps) {
   const navigation = [
     { name: "Dashboard", href: "/", icon: Users },
     { name: "Registrations", href: "/register", icon: UserPlus },
-    { name: "Student Report", href: "/report", icon: FileText },
   ];
 
   return (
@@ -48,6 +47,12 @@ export function Layout({ children }: LayoutProps) {
             <div className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all cursor-pointer border border-sidebar-border/40">
               <ExternalLink className="h-3.5 w-3.5 opacity-70" />
               User Report Form
+            </div>
+          </Link>
+          <Link href="/admin">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all cursor-pointer border border-sidebar-border/40">
+              <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+              Admin Panel
             </div>
           </Link>
           <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-sidebar-border/40 bg-sidebar-accent/20">

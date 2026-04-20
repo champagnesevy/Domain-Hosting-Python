@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCreateStudent } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 import {
   Loader2,
   ClipboardCheck,
@@ -16,6 +17,7 @@ import {
   Lock,
   Eye,
   EyeOff,
+  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -95,11 +97,19 @@ function PinGate({ onUnlock }: { onUnlock: () => void }) {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <header className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-2xl mx-auto px-6 h-16 flex items-center gap-3">
-          <GraduationCap className="h-6 w-6 text-primary" />
-          <span className="font-semibold text-slate-800 text-lg tracking-tight">
-            Student Attendance Report
-          </span>
+        <div className="max-w-2xl mx-auto px-6 h-16 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <GraduationCap className="h-6 w-6 text-primary" />
+            <span className="font-semibold text-slate-800 text-lg tracking-tight">
+              Student Attendance Report
+            </span>
+          </div>
+          <Link href="/report">
+            <button className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors px-2 py-1 rounded hover:bg-slate-100">
+              <LayoutDashboard className="h-3.5 w-3.5" />
+              Student Report
+            </button>
+          </Link>
         </div>
       </header>
 
@@ -237,11 +247,19 @@ export default function StudentReport() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <header className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-2xl mx-auto px-6 h-16 flex items-center gap-3">
-          <GraduationCap className="h-6 w-6 text-primary" />
-          <span className="font-semibold text-slate-800 text-lg tracking-tight">
-            Student Attendance Report
-          </span>
+        <div className="max-w-2xl mx-auto px-6 h-16 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <GraduationCap className="h-6 w-6 text-primary" />
+            <span className="font-semibold text-slate-800 text-lg tracking-tight">
+              Student Attendance Report
+            </span>
+          </div>
+          <Link href="/report">
+            <button className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors px-2 py-1 rounded hover:bg-slate-100">
+              <LayoutDashboard className="h-3.5 w-3.5" />
+              Student Report
+            </button>
+          </Link>
         </div>
       </header>
 
