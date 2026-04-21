@@ -11,7 +11,7 @@ import {
   getGetStudentQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Edit2, Trash2, Loader2, BookOpen, Clock, X, Check, Filter, Users, Plus, Printer, Download, Calendar } from "lucide-react";
+import { Search, Edit2, Trash2, Loader2, BookOpen, Clock, X, Check, Filter, Users, Plus, Printer, Download, Calendar, Eye, Phone, Mail, GraduationCap, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,6 +74,7 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState<ListStudentsStatus | "ALL">("ALL");
   const [dateFilter, setDateFilter] = useState<DateFilter>("ALL");
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [addRemarks, setAddRemarks] = useState("PRESENT");
   
@@ -255,14 +256,14 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500">
       <div className="no-print">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Overview</h1>
-        <p className="text-slate-500 mt-1">Today's attendance summary and active records.</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Overview</h1>
+        <p className="text-slate-500 mt-1 text-sm md:text-base">Today's attendance summary and active records.</p>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 no-print">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 no-print">
         <Card className="border-slate-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6">
             <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Students</CardTitle>
@@ -343,18 +344,20 @@ export default function Dashboard() {
               size="sm"
               className="gap-1.5 border-slate-200 text-slate-600 hover:text-slate-900 bg-white"
               onClick={handleExportCSV}
+              title="Export CSV"
             >
               <Download className="h-4 w-4" />
-              Export CSV
+              <span className="hidden sm:inline">Export CSV</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               className="gap-1.5 border-slate-200 text-slate-600 hover:text-slate-900 bg-white"
               onClick={handlePrint}
+              title="Print"
             >
               <Printer className="h-4 w-4" />
-              Print
+              <span className="hidden sm:inline">Print</span>
             </Button>
             <Button
               onClick={() => setAddOpen(true)}
@@ -362,7 +365,8 @@ export default function Dashboard() {
               className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
             >
               <Plus className="h-4 w-4" />
-              Add Student
+              <span className="hidden sm:inline">Add Student</span>
+              <span className="inline sm:hidden">Add</span>
             </Button>
           </div>
         </div>
@@ -431,7 +435,14 @@ export default function Dashboard() {
               ) : (
                 students?.map((student, i) => (
                   <TableRow key={student.id} className="group hover:bg-slate-50/50 transition-colors animate-in fade-in fill-mode-both" style={{ animationDelay: `${i * 50}ms` }}>
-                    <TableCell className="font-medium text-slate-900">{student.name}</TableCell>
+                    <TableCell className="font-medium text-slate-900">
+                      <button
+                        className="text-left hover:text-blue-600 hover:underline transition-colors focus:outline-none"
+                        onClick={() => setViewingStudent(student)}
+                      >
+                        {student.name}
+                      </button>
+                    </TableCell>
                     <TableCell className="text-slate-600">{student.block}</TableCell>
                     <TableCell className="text-slate-600">
                       <div className="flex items-center gap-1.5">
@@ -513,7 +524,6 @@ export default function Dashboard() {
                     <SelectItem value="2nd Year">2nd Year</SelectItem>
                     <SelectItem value="3rd Year">3rd Year</SelectItem>
                     <SelectItem value="4th Year">4th Year</SelectItem>
-                    <SelectItem value="Graduate">Graduate</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -644,6 +654,94 @@ export default function Dashboard() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Student Detail Dialog */}
+      <Dialog open={!!viewingStudent} onOpenChange={(o) => !o && setViewingStudent(null)}>
+        <DialogContent className="max-w-lg w-[95vw]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <GraduationCap className="h-5 w-5 text-blue-600" />
+              Student Profile
+            </DialogTitle>
+          </DialogHeader>
+          {viewingStudent && (
+            <div className="space-y-5">
+              {/* Name */}
+              <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3">
+                <div className="text-xs font-medium text-blue-400 uppercase tracking-wide mb-0.5">Full Name</div>
+                <div className="text-lg font-semibold text-blue-900">{viewingStudent.name}</div>
+                {viewingStudent.yearLevel && (
+                  <div className="text-sm text-blue-600 mt-0.5 font-medium">{viewingStudent.yearLevel}</div>
+                )}
+              </div>
+
+              {/* Contact info */}
+              {(viewingStudent.email || viewingStudent.phone) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {viewingStudent.email && (
+                    <div className="flex items-start gap-2.5 rounded-md border border-slate-200 px-3 py-2.5">
+                      <Mail className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
+                      <div>
+                        <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Email</div>
+                        <div className="text-sm text-slate-700 break-all">{viewingStudent.email}</div>
+                      </div>
+                    </div>
+                  )}
+                  {viewingStudent.phone && (
+                    <div className="flex items-start gap-2.5 rounded-md border border-slate-200 px-3 py-2.5">
+                      <Phone className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
+                      <div>
+                        <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Phone</div>
+                        <div className="text-sm text-slate-700">{viewingStudent.phone}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Attendance record */}
+              <div>
+                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2.5 flex items-center gap-1.5">
+                  <BookOpen className="h-3.5 w-3.5" />
+                  Attendance Record
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {[
+                    { label: "Block", value: viewingStudent.block },
+                    { label: "Course", value: viewingStudent.course },
+                    { label: "Room", value: viewingStudent.room },
+                    { label: "Date", value: viewingStudent.date ? new Date(viewingStudent.date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—" },
+                    { label: "Time", value: viewingStudent.time || "—" },
+                    { label: "Status", value: viewingStudent.status || "—" },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="rounded-md bg-slate-50 border border-slate-200 px-3 py-2">
+                      <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{label}</div>
+                      <div className="text-sm font-medium text-slate-700 mt-0.5">{value || "—"}</div>
+                    </div>
+                  ))}
+                </div>
+                {viewingStudent.remarks && (
+                  <div className="mt-2 rounded-md bg-slate-50 border border-slate-200 px-3 py-2">
+                    <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-0.5">Remarks</div>
+                    <div className={`text-sm font-semibold ${
+                      viewingStudent.remarks === "PRESENT" ? "text-green-600"
+                      : viewingStudent.remarks === "ABSENT" ? "text-red-600"
+                      : viewingStudent.remarks === "LATE" ? "text-amber-600"
+                      : "text-slate-600"
+                    }`}>{viewingStudent.remarks}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewingStudent(null)}>Close</Button>
+            <Button onClick={() => { if (viewingStudent) { setEditingStudent(viewingStudent); setViewingStudent(null); } }}>
+              <Edit2 className="h-4 w-4 mr-2" /> Edit Record
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

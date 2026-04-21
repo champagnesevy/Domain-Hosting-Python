@@ -269,7 +269,6 @@ export default function AdminDashboard() {
                     <SelectItem value="2nd Year">2nd Year</SelectItem>
                     <SelectItem value="3rd Year">3rd Year</SelectItem>
                     <SelectItem value="4th Year">4th Year</SelectItem>
-                    <SelectItem value="Graduate">Graduate</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
