@@ -26,6 +26,7 @@ export interface Student {
   block: string;
   course: string;
   room: string;
+  date: string;
   time: string;
   status: StudentStatus;
   remarks: string;
@@ -49,6 +50,7 @@ export interface CreateStudentRequest {
   block?: string;
   course?: string;
   room?: string;
+  date?: string;
   time?: string;
   status?: CreateStudentRequestStatus;
   remarks?: string;
@@ -71,6 +73,7 @@ export interface UpdateStudentRequest {
   block?: string;
   course?: string;
   room?: string;
+  date?: string;
   time?: string;
   status?: UpdateStudentRequestStatus;
   remarks?: string;
@@ -91,6 +94,7 @@ export type ListStudentsParams = {
   search?: string;
   status?: ListStudentsStatus;
   remarks?: string;
+  dateFilter?: ListStudentsDateFilter;
 };
 
 export type ListStudentsStatus =
@@ -99,4 +103,13 @@ export type ListStudentsStatus =
 export const ListStudentsStatus = {
   IN: "IN",
   OUT: "OUT",
+} as const;
+
+export type ListStudentsDateFilter =
+  (typeof ListStudentsDateFilter)[keyof typeof ListStudentsDateFilter];
+
+export const ListStudentsDateFilter = {
+  today: "today",
+  week: "week",
+  month: "month",
 } as const;

@@ -45,6 +45,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: dateFilter
+          in: query
+          schema:
+            type: string
+            enum: [today, week, month]
       responses:
         "200":
           description: List of students
@@ -183,6 +188,8 @@ components:
           type: string
         room:
           type: string
+        date:
+          type: string
         time:
           type: string
         status:
@@ -199,6 +206,7 @@ components:
         - block
         - course
         - room
+        - date
         - time
         - status
         - remarks
@@ -219,6 +227,8 @@ components:
         course:
           type: string
         room:
+          type: string
+        date:
           type: string
         time:
           type: string
@@ -245,6 +255,8 @@ components:
         course:
           type: string
         room:
+          type: string
+        date:
           type: string
         time:
           type: string

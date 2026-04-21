@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   useListStudents, 
   useGetStudentSummary, 
@@ -11,7 +11,7 @@ import {
   getGetStudentQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Edit2, Trash2, Loader2, BookOpen, Clock, X, Check, Filter, Users, Plus } from "lucide-react";
+import { Search, Edit2, Trash2, Loader2, BookOpen, Clock, X, Check, Filter, Users, Plus, Printer, Download, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,9 +42,37 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import type { Student, ListStudentsStatus, UpdateStudentRequestStatus } from "@workspace/api-client-react/src/generated/api.schemas";
 
+type DateFilter = "ALL" | "today" | "week" | "month";
+
+/** Returns today's date as YYYY-MM-DD in Philippine time (UTC+8) */
+function getTodayPH(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
+}
+
+/** Formats a YYYY-MM-DD string to a human-readable PH date */
+function formatDateDisplay(dateStr: string): string {
+  if (!dateStr) return "—";
+  const [year, month, day] = dateStr.split("-");
+  if (!year || !month || !day) return dateStr;
+  const d = new Date(`${dateStr}T00:00:00`);
+  return d.toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" });
+}
+
+/** Download a string as a file */
+function downloadFile(filename: string, content: string, type: string) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function Dashboard() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ListStudentsStatus | "ALL">("ALL");
+  const [dateFilter, setDateFilter] = useState<DateFilter>("ALL");
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [addRemarks, setAddRemarks] = useState("PRESENT");
@@ -52,9 +80,28 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  const todayPH = getTodayPH();
+
+  // Inject print styles
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.id = "dashboard-print-styles";
+    style.textContent = `
+      @media print {
+        aside, .no-print { display: none !important; }
+        body, html { background: white !important; }
+        .print-table-container { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+        @page { margin: 1.5cm; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => { document.getElementById("dashboard-print-styles")?.remove(); };
+  }, []);
+
   const { data: students, isLoading: isLoadingStudents } = useListStudents({
     search: search || undefined,
     status: statusFilter === "ALL" ? undefined : statusFilter,
+    dateFilter: dateFilter === "ALL" ? undefined : (dateFilter as any),
   });
 
   const { data: summary, isLoading: isLoadingSummary } = useGetStudentSummary();
@@ -91,6 +138,7 @@ export default function Dashboard() {
       block: formData.get("block") as string,
       course: formData.get("course") as string,
       room: formData.get("room") as string,
+      date: formData.get("date") as string,
       time: formData.get("time") as string,
       status: formData.get("status") as UpdateStudentRequestStatus,
       remarks: formData.get("remarks") as string,
@@ -114,6 +162,7 @@ export default function Dashboard() {
     const name = (formData.get("name") as string).trim();
     const block = (formData.get("block") as string).trim();
     const room = (formData.get("room") as string).trim();
+    const date = (formData.get("date") as string).trim();
     const time = (formData.get("time") as string).trim();
     const remarks = addRemarks;
 
@@ -130,6 +179,7 @@ export default function Dashboard() {
         block: block || "TBD",
         room: room || "TBD",
         course: "TBD",
+        date: date || todayPH,
         time: time || "N/A",
         status,
         remarks,
@@ -147,6 +197,33 @@ export default function Dashboard() {
         toast({ title: "Failed to add student", variant: "destructive" });
       }
     });
+  };
+
+  const handleExportCSV = () => {
+    if (!students?.length) {
+      toast({ title: "No records to export", variant: "destructive" });
+      return;
+    }
+    const headers = ["#", "Name", "Block", "Course", "Room", "Date", "Time", "Status", "Remarks"];
+    const rows = students.map((s, i) => [
+      i + 1,
+      `"${s.name.replace(/"/g, '""')}"`,
+      s.block,
+      s.course,
+      s.room,
+      s.date || "—",
+      s.time,
+      s.status,
+      s.remarks,
+    ]);
+    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const date = todayPH;
+    downloadFile(`attendance_${date}.csv`, csv, "text/csv");
+    toast({ title: "CSV exported successfully" });
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const getStatusBadge = (status: string) => {
@@ -168,15 +245,22 @@ export default function Dashboard() {
     return <span className="text-slate-500 font-medium text-xs uppercase tracking-wider">{remarks}</span>;
   };
 
+  const dateFilterLabels: Record<DateFilter, string> = {
+    ALL: "All Time",
+    today: "Today",
+    week: "This Week",
+    month: "This Month",
+  };
+
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
-      <div>
+      <div className="no-print">
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Overview</h1>
         <p className="text-slate-500 mt-1">Today's attendance summary and active records.</p>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 no-print">
         <Card className="border-slate-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6">
             <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Students</CardTitle>
@@ -226,9 +310,10 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50/50">
-          <div className="relative w-full sm:w-96">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden print-table-container">
+        {/* Toolbar row 1: search + status + action buttons */}
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-3 justify-between items-center bg-slate-50/50 no-print">
+          <div className="relative w-full sm:w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input 
               placeholder="Search by name, course..." 
@@ -237,11 +322,11 @@ export default function Dashboard() {
               className="pl-9 border-slate-200 bg-white"
             />
           </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap justify-end">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-slate-400" />
               <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
-                <SelectTrigger className="w-[140px] border-slate-200 bg-white">
+                <SelectTrigger className="w-[130px] border-slate-200 bg-white">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -252,13 +337,65 @@ export default function Dashboard() {
               </Select>
             </div>
             <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 border-slate-200 text-slate-600 hover:text-slate-900 bg-white"
+              onClick={handleExportCSV}
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 border-slate-200 text-slate-600 hover:text-slate-900 bg-white"
+              onClick={handlePrint}
+            >
+              <Printer className="h-4 w-4" />
+              Print
+            </Button>
+            <Button
               onClick={() => setAddOpen(true)}
+              size="sm"
               className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
             >
               <Plus className="h-4 w-4" />
               Add Student
             </Button>
           </div>
+        </div>
+
+        {/* Toolbar row 2: date filter tabs */}
+        <div className="px-4 py-2.5 border-b border-slate-100 flex items-center gap-1.5 bg-white no-print">
+          <Calendar className="h-3.5 w-3.5 text-slate-400 mr-1" />
+          {(["ALL", "today", "week", "month"] as DateFilter[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => setDateFilter(f)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                dateFilter === f
+                  ? "bg-primary text-white shadow-sm"
+                  : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+              }`}
+            >
+              {dateFilterLabels[f]}
+            </button>
+          ))}
+          {dateFilter !== "ALL" && (
+            <span className="ml-2 text-[11px] text-slate-400">
+              Showing {students?.length ?? 0} record{students?.length !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+
+        {/* Print header — only visible when printing */}
+        <div className="hidden print:block px-6 py-4 border-b border-slate-200">
+          <h2 className="text-lg font-bold text-slate-900">Faculty Desk — Attendance Records</h2>
+          <p className="text-sm text-slate-500">
+            Printed: {new Date().toLocaleString("en-PH", { timeZone: "Asia/Manila" })}
+            {dateFilter !== "ALL" ? ` · Filter: ${dateFilterLabels[dateFilter]}` : ""}
+            {statusFilter !== "ALL" ? ` · Status: ${statusFilter}` : ""}
+          </p>
         </div>
 
         <div className="overflow-x-auto">
@@ -269,22 +406,23 @@ export default function Dashboard() {
                 <TableHead className="font-semibold text-slate-600 h-12">Block</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Course</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Room</TableHead>
+                <TableHead className="font-semibold text-slate-600 h-12">Date</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Time</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Status</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Remarks</TableHead>
-                <TableHead className="text-right font-semibold text-slate-600 h-12">Actions</TableHead>
+                <TableHead className="text-right font-semibold text-slate-600 h-12 no-print">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoadingStudents ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-32 text-center">
+                  <TableCell colSpan={9} className="h-32 text-center">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
                   </TableCell>
                 </TableRow>
               ) : students?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-32 text-center text-slate-500">
+                  <TableCell colSpan={9} className="h-32 text-center text-slate-500">
                     No records found.
                   </TableCell>
                 </TableRow>
@@ -295,15 +433,18 @@ export default function Dashboard() {
                     <TableCell className="text-slate-600">{student.block}</TableCell>
                     <TableCell className="text-slate-600">
                       <div className="flex items-center gap-1.5">
-                        <BookOpen className="h-3.5 w-3.5 text-slate-400" />
+                        <BookOpen className="h-3.5 w-3.5 text-slate-400 no-print" />
                         {student.course}
                       </div>
                     </TableCell>
                     <TableCell className="text-slate-600">{student.room}</TableCell>
+                    <TableCell className="text-slate-500 whitespace-nowrap text-sm">
+                      {formatDateDisplay(student.date)}
+                    </TableCell>
                     <TableCell className="text-slate-600 whitespace-nowrap">{student.time}</TableCell>
                     <TableCell>{getStatusBadge(student.status)}</TableCell>
                     <TableCell>{getRemarksBadge(student.remarks)}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right no-print">
                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button 
                           variant="ghost" 
@@ -329,11 +470,17 @@ export default function Dashboard() {
             </TableBody>
           </Table>
         </div>
+
+        {students && students.length > 0 && (
+          <div className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400 no-print">
+            {students.length} record{students.length !== 1 ? "s" : ""} shown
+          </div>
+        )}
       </div>
 
       {/* Add Student Dialog */}
       <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) setAddRemarks("PRESENT"); }}>
-        <DialogContent className="sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-[500px]">
           <form onSubmit={handleAdd}>
             <DialogHeader>
               <DialogTitle className="text-lg font-semibold text-slate-900">Add Student</DialogTitle>
@@ -353,9 +500,21 @@ export default function Dashboard() {
                   <Input id="add-room" name="room" placeholder="e.g. 403" />
                 </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="add-time">Time</Label>
-                <Input id="add-time" name="time" placeholder="e.g. 9:00 AM" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="add-date">Date</Label>
+                  <Input 
+                    id="add-date" 
+                    name="date" 
+                    type="date" 
+                    defaultValue={todayPH}
+                    max={todayPH}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="add-time">Time</Label>
+                  <Input id="add-time" name="time" placeholder="e.g. 9:00 AM" />
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="add-remarks">Remarks</Label>
@@ -387,7 +546,7 @@ export default function Dashboard() {
 
       {/* Edit Student Dialog */}
       <Dialog open={!!editingStudent} onOpenChange={(open) => !open && setEditingStudent(null)}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[480px]">
           <form onSubmit={handleUpdate}>
             <DialogHeader>
               <DialogTitle>Edit Record</DialogTitle>
@@ -407,10 +566,21 @@ export default function Dashboard() {
                   <Input id="course" name="course" defaultValue={studentDetails?.course ?? editingStudent?.course} required disabled={isLoadingDetails} />
                 </div>
               </div>
+              <div className="grid gap-2">
+                <Label htmlFor="room">Room</Label>
+                <Input id="room" name="room" defaultValue={studentDetails?.room ?? editingStudent?.room} required disabled={isLoadingDetails} />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="room">Room</Label>
-                  <Input id="room" name="room" defaultValue={studentDetails?.room ?? editingStudent?.room} required disabled={isLoadingDetails} />
+                  <Label htmlFor="date">Date</Label>
+                  <Input 
+                    id="date" 
+                    name="date" 
+                    type="date" 
+                    max={todayPH}
+                    defaultValue={studentDetails?.date ?? editingStudent?.date ?? todayPH}
+                    disabled={isLoadingDetails}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="time">Time</Label>

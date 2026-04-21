@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, studentsTable } from "@workspace/db";
-import { eq, ilike, and, or, sql } from "drizzle-orm";
+import { eq, ilike, and, or, sql, gte } from "drizzle-orm";
 import {
   ListStudentsQueryParams,
   CreateStudentBody,
@@ -12,13 +12,32 @@ import {
 
 const router = Router();
 
+/** Returns today's date as YYYY-MM-DD in Philippine time (UTC+8) */
+function getTodayPH(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
+}
+
+/** Returns a YYYY-MM-DD date string shifted by `days` from today in PH time */
+function getDateOffsetPH(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
+}
+
+/** Returns the first day of the current month in PH time as YYYY-MM-DD */
+function getFirstOfMonthPH(): string {
+  const d = new Date();
+  const phStr = d.toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
+  return phStr.slice(0, 7) + "-01";
+}
+
 router.get("/", async (req, res) => {
   const parsed = ListStudentsQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ message: "Invalid query parameters" });
     return;
   }
-  const { search, status, remarks } = parsed.data;
+  const { search, status, remarks, dateFilter } = parsed.data;
 
   const conditions = [];
 
@@ -37,6 +56,13 @@ router.get("/", async (req, res) => {
   }
   if (remarks) {
     conditions.push(ilike(studentsTable.remarks, `%${remarks}%`));
+  }
+  if (dateFilter === "today") {
+    conditions.push(eq(studentsTable.date, getTodayPH()));
+  } else if (dateFilter === "week") {
+    conditions.push(gte(studentsTable.date, getDateOffsetPH(-6)));
+  } else if (dateFilter === "month") {
+    conditions.push(gte(studentsTable.date, getFirstOfMonthPH()));
   }
 
   const students =
@@ -64,15 +90,19 @@ router.post("/", async (req, res) => {
     return;
   }
 
+  const todayPH = getTodayPH();
   const now = new Date();
   const autoTime = now.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
+    timeZone: "Asia/Manila",
   });
 
   const providedTime = parsed.data.time?.trim();
+  const providedDate = parsed.data.date?.trim();
   const chosenStatus = parsed.data.status ?? "N/A";
+
   let timeValue: string;
   if (providedTime && providedTime.length > 0) {
     timeValue = providedTime;
@@ -92,6 +122,7 @@ router.post("/", async (req, res) => {
       block: parsed.data.block ?? "TBD",
       course: parsed.data.course ?? "TBD",
       room: parsed.data.room ?? "TBD",
+      date: providedDate && providedDate.length > 0 ? providedDate : todayPH,
       time: timeValue,
       status: chosenStatus,
       remarks: parsed.data.remarks ?? "NEWLY REGISTERED",
@@ -183,11 +214,10 @@ router.put("/:id", async (req, res) => {
   if (data.room !== undefined) updateValues.room = data.room;
   if (data.remarks !== undefined) updateValues.remarks = data.remarks;
   if (data.status !== undefined) updateValues.status = data.status;
-
-  // Time: if explicitly provided, use it. Otherwise if status changes,
-  // set N/A for OUT, keep existing for IN (admin can edit time manually).
-  if (data.time !== undefined) {
-    updateValues.time = data.time.trim() || "N/A";
+  if (data.time !== undefined) updateValues.time = data.time.trim() || "N/A";
+  if (data.date !== undefined) {
+    const d = data.date.trim();
+    if (d) updateValues.date = d;
   }
 
   const [updated] = await db

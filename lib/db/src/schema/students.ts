@@ -11,6 +11,7 @@ export const studentsTable = pgTable("students", {
   block: text("block").notNull().default("TBD"),
   course: text("course").notNull().default("TBD"),
   room: text("room").notNull().default("TBD"),
+  date: text("date").notNull().default(""),
   time: text("time").notNull().default("N/A"),
   status: text("status").notNull().default("N/A"),
   remarks: text("remarks").notNull().default("N/A"),

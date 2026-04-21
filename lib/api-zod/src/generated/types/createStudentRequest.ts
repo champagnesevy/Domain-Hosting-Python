@@ -15,6 +15,7 @@ export interface CreateStudentRequest {
   block?: string;
   course?: string;
   room?: string;
+  date?: string;
   time?: string;
   status?: CreateStudentRequestStatus;
   remarks?: string;

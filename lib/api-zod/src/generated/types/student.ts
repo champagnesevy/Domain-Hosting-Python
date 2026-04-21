@@ -16,6 +16,7 @@ export interface Student {
   block: string;
   course: string;
   room: string;
+  date: string;
   time: string;
   status: StudentStatus;
   remarks: string;

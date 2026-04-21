@@ -10,6 +10,7 @@ export * from "./createStudentRequest";
 export * from "./createStudentRequestStatus";
 export * from "./errorResponse";
 export * from "./healthStatus";
+export * from "./listStudentsDateFilter";
 export * from "./listStudentsParams";
 export * from "./listStudentsStatus";
 export * from "./student";
