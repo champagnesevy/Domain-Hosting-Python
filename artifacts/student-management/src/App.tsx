@@ -9,6 +9,7 @@ import Register from "@/pages/register";
 import Report from "@/pages/report";
 import StudentReport from "@/pages/student-report";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AdminRegister from "@/pages/admin-register";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -19,7 +20,12 @@ function Router() {
       {/* Standalone student-facing page — no admin sidebar */}
       <Route path="/student-report" component={StudentReport} />
 
-      {/* Admin-only dashboard — limited to name management */}
+      {/* Admin-only routes — limited access */}
+      <Route path="/admin/register">
+        <AdminLayout>
+          <AdminRegister />
+        </AdminLayout>
+      </Route>
       <Route path="/admin">
         <AdminLayout>
           <AdminDashboard />

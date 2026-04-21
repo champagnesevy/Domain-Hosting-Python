@@ -8,7 +8,7 @@ import {
   getGetStudentQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Edit2, Loader2, Plus, User, X, Check } from "lucide-react";
+import { Search, Edit2, Loader2, Plus, User, X, Check, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,17 +26,31 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import type { Student } from "@workspace/api-client-react/src/generated/api.schemas";
 
+/** Returns today's date as YYYY-MM-DD in Philippine time (UTC+8) */
+function getTodayPH(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
+}
+
 export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const [addRemarks, setAddRemarks] = useState("PRESENT");
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const todayPH = getTodayPH();
 
   const { data: students, isLoading } = useListStudents({
     search: search || undefined,
@@ -63,12 +77,34 @@ export default function AdminDashboard() {
       toast({ title: "Name is required", variant: "destructive" });
       return;
     }
+    const block = (formData.get("block") as string | null)?.trim() || "TBD";
+    const room = (formData.get("room") as string | null)?.trim() || "TBD";
+    const yearLevel = (formData.get("yearLevel") as string | null)?.trim() || undefined;
+    const date = (formData.get("date") as string | null)?.trim() || todayPH;
+    const time = (formData.get("time") as string | null)?.trim() || "N/A";
+    const remarks = addRemarks;
+    const status = remarks === "ABSENT" ? "OUT" : "IN";
+
     createStudent.mutate(
-      { data: { name } },
+      {
+        data: {
+          name,
+          block,
+          room,
+          course: "TBD",
+          yearLevel: yearLevel || undefined,
+          date,
+          time,
+          status,
+          remarks,
+        },
+      },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
           setAddOpen(false);
+          setAddRemarks("PRESENT");
+          (e.target as HTMLFormElement).reset();
           toast({ title: "Student added successfully" });
         },
         onError: () => {
@@ -184,19 +220,19 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* Add Student Dialog */}
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5 text-primary" />
-              Add Student
-            </DialogTitle>
-          </DialogHeader>
+      {/* Add Student Dialog — full form */}
+      <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) setAddRemarks("PRESENT"); }}>
+        <DialogContent className="sm:max-w-[500px]">
           <form onSubmit={handleAdd}>
-            <div className="py-4 space-y-4">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Plus className="h-5 w-5 text-primary" />
+                Add Student
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="add-name">Full Name</Label>
+                <Label htmlFor="add-name">Full Name <span className="text-rose-500">*</span></Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
@@ -209,12 +245,70 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="add-block">Block</Label>
+                  <Input id="add-block" name="block" placeholder="e.g. 4.2 BSIT" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="add-room">Room</Label>
+                  <Input id="add-room" name="room" placeholder="e.g. 403" />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="add-year-level">Year Level</Label>
+                <Select name="yearLevel">
+                  <SelectTrigger className="w-full" id="add-year-level">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="h-4 w-4 text-slate-400" />
+                      <SelectValue placeholder="Select year level" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1st Year">1st Year</SelectItem>
+                    <SelectItem value="2nd Year">2nd Year</SelectItem>
+                    <SelectItem value="3rd Year">3rd Year</SelectItem>
+                    <SelectItem value="4th Year">4th Year</SelectItem>
+                    <SelectItem value="Graduate">Graduate</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="add-date">Date</Label>
+                  <Input
+                    id="add-date"
+                    name="date"
+                    type="date"
+                    defaultValue={todayPH}
+                    max={todayPH}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="add-time">Time</Label>
+                  <Input id="add-time" name="time" placeholder="e.g. 9:00 AM" />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label>Remarks</Label>
+                <Select value={addRemarks} onValueChange={setAddRemarks}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select remarks" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PRESENT">PRESENT</SelectItem>
+                    <SelectItem value="ABSENT">ABSENT</SelectItem>
+                    <SelectItem value="LATE">LATE</SelectItem>
+                    <SelectItem value="NEWLY REGISTERED">NEWLY REGISTERED</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <DialogFooter className="gap-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setAddOpen(false)}
+                onClick={() => { setAddOpen(false); setAddRemarks("PRESENT"); }}
                 disabled={createStudent.isPending}
               >
                 <X className="h-4 w-4 mr-1" /> Cancel
@@ -232,7 +326,7 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Name Dialog */}
+      {/* Rename Dialog */}
       <Dialog open={!!editingStudent} onOpenChange={(open) => !open && setEditingStudent(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

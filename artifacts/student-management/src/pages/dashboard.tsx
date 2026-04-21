@@ -162,6 +162,7 @@ export default function Dashboard() {
     const name = (formData.get("name") as string).trim();
     const block = (formData.get("block") as string).trim();
     const room = (formData.get("room") as string).trim();
+    const yearLevel = (formData.get("yearLevel") as string | null)?.trim() || undefined;
     const date = (formData.get("date") as string).trim();
     const time = (formData.get("time") as string).trim();
     const remarks = addRemarks;
@@ -179,6 +180,7 @@ export default function Dashboard() {
         block: block || "TBD",
         room: room || "TBD",
         course: "TBD",
+        yearLevel: yearLevel || undefined,
         date: date || todayPH,
         time: time || "N/A",
         status,
@@ -499,6 +501,21 @@ export default function Dashboard() {
                   <Label htmlFor="add-room">Room Number</Label>
                   <Input id="add-room" name="room" placeholder="e.g. 403" />
                 </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="add-year-level">Year Level</Label>
+                <Select name="yearLevel">
+                  <SelectTrigger className="w-full" id="add-year-level">
+                    <SelectValue placeholder="Select year level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1st Year">1st Year</SelectItem>
+                    <SelectItem value="2nd Year">2nd Year</SelectItem>
+                    <SelectItem value="3rd Year">3rd Year</SelectItem>
+                    <SelectItem value="4th Year">4th Year</SelectItem>
+                    <SelectItem value="Graduate">Graduate</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
