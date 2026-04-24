@@ -7,14 +7,10 @@
  */
 
 export * from "./createStudentRequest";
-export * from "./createStudentRequestStatus";
 export * from "./errorResponse";
 export * from "./healthStatus";
 export * from "./listStudentsDateFilter";
 export * from "./listStudentsParams";
-export * from "./listStudentsStatus";
 export * from "./student";
-export * from "./studentStatus";
 export * from "./studentSummary";
 export * from "./updateStudentRequest";
-export * from "./updateStudentRequestStatus";

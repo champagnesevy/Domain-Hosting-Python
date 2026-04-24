@@ -158,8 +158,8 @@ export default function StudentReport() {
       course: data.subject,
       courseCode: data.course,
       room: data.room,
-      status: data.status === "Present" ? "IN" : data.status === "Absent" ? "OUT" : "N/A",
-      remarks: data.remarks?.trim() || "",
+      status: data.status,
+      remarks: data.remarks?.trim() || data.status,
     };
     createStudent.mutate(
       { data: payload },

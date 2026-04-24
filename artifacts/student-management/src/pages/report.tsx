@@ -17,15 +17,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { CreateStudentRequestStatus } from "@workspace/api-client-react/src/generated/api.schemas";
+
+const STATUS_OPTIONS = [
+  "Present",
+  "Absent",
+  "Absent with post on GCR",
+  "Late",
+  "Late with post on GCR",
+] as const;
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   block: z.string().min(1, "Block is required"),
   course: z.string().min(1, "Course code is required"),
   room: z.string().min(1, "Room is required"),
-  status: z.enum(["IN", "OUT", "N/A"] as const),
-  remarks: z.string().min(1, "Remarks are required"),
+  status: z.enum(STATUS_OPTIONS),
+  remarks: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -42,8 +49,8 @@ export default function Report() {
       block: "",
       course: "",
       room: "",
-      status: "IN",
-      remarks: "PRESENT",
+      status: "Present",
+      remarks: "",
     },
   });
 
@@ -51,6 +58,7 @@ export default function Report() {
     createStudent.mutate({
       data: {
         ...data,
+        remarks: data.remarks?.trim() || data.status,
       }
     }, {
       onSuccess: () => {
@@ -175,11 +183,9 @@ export default function Report() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                        <SelectItem value="PRESENT">Present</SelectItem>
-                        <SelectItem value="ABSENT">Absent</SelectItem>
-                        <SelectItem value="ABSENT_WITH_POST_ON_GCR">Absent with post on GCR</SelectItem>
-                        <SelectItem value="LATE">Late</SelectItem>
-                        <SelectItem value="LATE_WITH_POST_ON_GCR">Late with post on GCR</SelectItem>
+                          {STATUS_OPTIONS.map((option) => (
+                            <SelectItem key={option} value={option}>{option}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />

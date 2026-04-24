@@ -5,7 +5,6 @@
  * Student Management System API
  * OpenAPI spec version: 0.1.0
  */
-import type { StudentStatus } from "./studentStatus";
 
 export interface Student {
   id: number;
@@ -19,7 +18,7 @@ export interface Student {
   room: string;
   date: string;
   time: string;
-  status: StudentStatus;
+  status: string;
   remarks: string;
   createdAt: Date;
 }

@@ -5,7 +5,6 @@
  * Student Management System API
  * OpenAPI spec version: 0.1.0
  */
-import type { UpdateStudentRequestStatus } from "./updateStudentRequestStatus";
 
 export interface UpdateStudentRequest {
   name?: string;
@@ -18,6 +17,6 @@ export interface UpdateStudentRequest {
   room?: string;
   date?: string;
   time?: string;
-  status?: UpdateStudentRequestStatus;
+  status?: string;
   remarks?: string;
 }

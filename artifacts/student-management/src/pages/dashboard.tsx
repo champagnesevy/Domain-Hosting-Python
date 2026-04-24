@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import type { Student, ListStudentsStatus, UpdateStudentRequestStatus } from "@workspace/api-client-react";
+import type { Student } from "@workspace/api-client-react";
 
 type DateFilter = "ALL" | "today" | "week" | "month";
 
@@ -48,7 +48,7 @@ function downloadFile(filename: string, content: string, type: string) {
 
 export default function Dashboard() {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ListStudentsStatus | "ALL">("ALL");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [dateFilter, setDateFilter] = useState<DateFilter>("ALL");
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
@@ -88,7 +88,7 @@ export default function Dashboard() {
       room: formData.get("room") as string,
       date: formData.get("date") as string,
       time: formData.get("time") as string,
-      status: formData.get("status") as UpdateStudentRequestStatus,
+      status: formData.get("status") as string,
       remarks: formData.get("remarks") as string,
     };
     updateStudent.mutate({ id: editingStudent.id, data }, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetStudentSummaryQueryKey() }); setEditingStudent(null); toast({ title: "Record updated successfully" }); }, onError: () => toast({ title: "Failed to update record", variant: "destructive" }) });

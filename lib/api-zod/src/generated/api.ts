@@ -20,7 +20,7 @@ export const HealthCheckResponse = zod.object({
  */
 export const ListStudentsQueryParams = zod.object({
   search: zod.coerce.string().optional(),
-  status: zod.enum(["IN", "OUT"]).optional(),
+  status: zod.coerce.string().optional(),
   remarks: zod.coerce.string().optional(),
   dateFilter: zod.enum(["today", "week", "month"]).optional(),
 });
@@ -37,7 +37,7 @@ export const ListStudentsResponseItem = zod.object({
   room: zod.string(),
   date: zod.string(),
   time: zod.string(),
-  status: zod.enum(["IN", "OUT", "N/A"]),
+  status: zod.string(),
   remarks: zod.string(),
   createdAt: zod.coerce.date(),
 });
@@ -57,7 +57,7 @@ export const CreateStudentBody = zod.object({
   room: zod.string().optional(),
   date: zod.string().optional(),
   time: zod.string().optional(),
-  status: zod.enum(["IN", "OUT", "N/A"]).optional(),
+  status: zod.string().optional(),
   remarks: zod.string().optional(),
 });
 
@@ -80,7 +80,7 @@ export const GetStudentResponse = zod.object({
   room: zod.string(),
   date: zod.string(),
   time: zod.string(),
-  status: zod.enum(["IN", "OUT", "N/A"]),
+  status: zod.string(),
   remarks: zod.string(),
   createdAt: zod.coerce.date(),
 });
@@ -103,7 +103,7 @@ export const UpdateStudentBody = zod.object({
   room: zod.string().optional(),
   date: zod.string().optional(),
   time: zod.string().optional(),
-  status: zod.enum(["IN", "OUT", "N/A"]).optional(),
+  status: zod.string().optional(),
   remarks: zod.string().optional(),
 });
 
@@ -119,7 +119,7 @@ export const UpdateStudentResponse = zod.object({
   room: zod.string(),
   date: zod.string(),
   time: zod.string(),
-  status: zod.enum(["IN", "OUT", "N/A"]),
+  status: zod.string(),
   remarks: zod.string(),
   createdAt: zod.coerce.date(),
 });

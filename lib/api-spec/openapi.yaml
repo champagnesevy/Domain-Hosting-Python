@@ -40,7 +40,6 @@ paths:
           in: query
           schema:
             type: string
-            enum: [IN, OUT]
         - name: remarks
           in: query
           schema:
@@ -196,7 +195,6 @@ components:
           type: string
         status:
           type: string
-          enum: [IN, OUT, "N/A"]
         remarks:
           type: string
         createdAt:
@@ -239,7 +237,6 @@ components:
           type: string
         status:
           type: string
-          enum: [IN, OUT, "N/A"]
         remarks:
           type: string
       required:
@@ -269,7 +266,6 @@ components:
           type: string
         status:
           type: string
-          enum: [IN, OUT, "N/A"]
         remarks:
           type: string
     StudentSummary:

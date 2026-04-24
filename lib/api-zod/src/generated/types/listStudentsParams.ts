@@ -6,11 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ListStudentsDateFilter } from "./listStudentsDateFilter";
-import type { ListStudentsStatus } from "./listStudentsStatus";
 
 export type ListStudentsParams = {
   search?: string;
-  status?: ListStudentsStatus;
+  status?: string;
   remarks?: string;
   dateFilter?: ListStudentsDateFilter;
 };

@@ -9,14 +9,6 @@ export interface HealthStatus {
   status: string;
 }
 
-export type StudentStatus = (typeof StudentStatus)[keyof typeof StudentStatus];
-
-export const StudentStatus = {
-  IN: "IN",
-  OUT: "OUT",
-  "N/A": "N/A",
-} as const;
-
 export interface Student {
   id: number;
   name: string;
@@ -29,19 +21,10 @@ export interface Student {
   room: string;
   date: string;
   time: string;
-  status: StudentStatus;
+  status: string;
   remarks: string;
   createdAt: string;
 }
-
-export type CreateStudentRequestStatus =
-  (typeof CreateStudentRequestStatus)[keyof typeof CreateStudentRequestStatus];
-
-export const CreateStudentRequestStatus = {
-  IN: "IN",
-  OUT: "OUT",
-  "N/A": "N/A",
-} as const;
 
 export interface CreateStudentRequest {
   name: string;
@@ -54,18 +37,9 @@ export interface CreateStudentRequest {
   room?: string;
   date?: string;
   time?: string;
-  status?: CreateStudentRequestStatus;
+  status?: string;
   remarks?: string;
 }
-
-export type UpdateStudentRequestStatus =
-  (typeof UpdateStudentRequestStatus)[keyof typeof UpdateStudentRequestStatus];
-
-export const UpdateStudentRequestStatus = {
-  IN: "IN",
-  OUT: "OUT",
-  "N/A": "N/A",
-} as const;
 
 export interface UpdateStudentRequest {
   name?: string;
@@ -78,7 +52,7 @@ export interface UpdateStudentRequest {
   room?: string;
   date?: string;
   time?: string;
-  status?: UpdateStudentRequestStatus;
+  status?: string;
   remarks?: string;
 }
 
@@ -95,18 +69,10 @@ export interface ErrorResponse {
 
 export type ListStudentsParams = {
   search?: string;
-  status?: ListStudentsStatus;
+  status?: string;
   remarks?: string;
   dateFilter?: ListStudentsDateFilter;
 };
-
-export type ListStudentsStatus =
-  (typeof ListStudentsStatus)[keyof typeof ListStudentsStatus];
-
-export const ListStudentsStatus = {
-  IN: "IN",
-  OUT: "OUT",
-} as const;
 
 export type ListStudentsDateFilter =
   (typeof ListStudentsDateFilter)[keyof typeof ListStudentsDateFilter];
