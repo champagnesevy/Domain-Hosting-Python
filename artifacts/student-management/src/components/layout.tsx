@@ -92,7 +92,7 @@ export function Layout({ children }: LayoutProps) {
             </div>
           </div>
           <div className="text-xs text-sidebar-foreground/50 font-medium px-2">
-            Student Management System v1.0
+            Teacher Management System v1.0
           </div>
         </div>
       </aside>

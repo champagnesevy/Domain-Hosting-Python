@@ -38,13 +38,22 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 
+const STATUS_OPTIONS = [
+  "Present",
+  "Absent",
+  "Absent with post on GCR",
+  "Late",
+  "Late with post on GCR",
+] as const;
+
 const formSchema = z.object({
   name: z.string().min(2, "Full name must be at least 2 characters"),
   block: z.string().min(1, "Block is required"),
+  subject: z.string().min(1, "Subject is required"),
   course: z.string().min(1, "Course code is required"),
   room: z.string().min(1, "Room number is required"),
-  status: z.enum(["IN", "OUT", "N/A"] as const),
-  remarks: z.string().min(1, "Remarks are required"),
+  status: z.enum(STATUS_OPTIONS),
+  remarks: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -52,10 +61,11 @@ type FormValues = z.infer<typeof formSchema>;
 const defaultValues: FormValues = {
   name: "",
   block: "",
+  subject: "",
   course: "",
   room: "",
-  status: "IN",
-  remarks: "PRESENT",
+  status: "Present",
+  remarks: "",
 };
 
 function PinGate({ onUnlock }: { onUnlock: () => void }) {
@@ -174,10 +184,6 @@ function PinGate({ onUnlock }: { onUnlock: () => void }) {
               </Button>
             </form>
           </div>
-
-          <p className="text-center text-xs text-slate-400 mt-4">
-            Student Management System — For student use only
-          </p>
         </div>
       </main>
     </div>
@@ -200,8 +206,17 @@ export default function StudentReport() {
   };
 
   const onSubmit = (data: FormValues) => {
+    const payload = {
+      name: data.name,
+      block: data.block,
+      course: data.subject,
+      courseCode: data.course,
+      room: data.room,
+      status: data.status as any,
+      remarks: data.remarks?.trim() || "—",
+    };
     createStudent.mutate(
-      { data },
+      { data: payload },
       {
         onSuccess: () => {
           setSubmitted(true);
@@ -251,13 +266,13 @@ export default function StudentReport() {
           <div className="flex items-center gap-3">
             <GraduationCap className="h-6 w-6 text-primary" />
             <span className="font-semibold text-slate-800 text-lg tracking-tight">
-              Student Attendance Report
+              Teacher Attendance Report
             </span>
           </div>
           <Link href="/report">
             <button className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors px-2 py-1 rounded hover:bg-slate-100">
               <LayoutDashboard className="h-3.5 w-3.5" />
-              Student Report
+              Teacher Report
             </button>
           </Link>
         </div>
@@ -333,17 +348,17 @@ export default function StudentReport() {
 
                     <FormField
                       control={form.control}
-                      name="course"
+                      name="room"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Course Code <span className="text-rose-500">*</span>
+                            Room Number <span className="text-rose-500">*</span>
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                               <Input
-                                placeholder="e.g. PC29"
+                                placeholder="e.g. 403"
                                 className="pl-9"
                                 {...field}
                               />
@@ -355,30 +370,55 @@ export default function StudentReport() {
                     />
                   </div>
 
-                  <FormField
-                    control={form.control}
-                    name="room"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Room Number <span className="text-rose-500">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                            <Input
-                              placeholder="e.g. 403"
-                              className="pl-9"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <FormField
+                      control={form.control}
+                      name="subject"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Subject <span className="text-rose-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                              <Input
+                                placeholder="e.g. Mathematics"
+                                className="pl-9"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-slate-100">
+                    <FormField
+                      control={form.control}
+                      name="course"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Course Code <span className="text-rose-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                              <Input
+                                placeholder="e.g. MATH101"
+                                className="pl-9"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100">
                     <FormField
                       control={form.control}
                       name="status"
@@ -397,35 +437,11 @@ export default function StudentReport() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="IN">IN</SelectItem>
-                              <SelectItem value="OUT">OUT</SelectItem>
-                              <SelectItem value="N/A">N/A</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="remarks"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Remarks <span className="text-rose-500">*</span>
-                          </FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select remarks" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="PRESENT">PRESENT</SelectItem>
-                              <SelectItem value="ABSENT">ABSENT</SelectItem>
-                              <SelectItem value="LATE">LATE</SelectItem>
-                              <SelectItem value="EXCUSED">EXCUSED</SelectItem>
+                              {STATUS_OPTIONS.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -433,6 +449,23 @@ export default function StudentReport() {
                       )}
                     />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="remarks"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Remarks (optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Add any optional notes..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
                     <Button
@@ -461,10 +494,6 @@ export default function StudentReport() {
               </Form>
             </div>
           </div>
-
-          <p className="text-center text-xs text-slate-400 mt-6">
-            Student Management System — For student use only
-          </p>
         </div>
       </main>
     </div>

@@ -78,7 +78,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
         <div className="p-4 border-t border-slate-700/50 shrink-0">
           <div className="text-xs text-slate-400 font-medium px-2">Admin — Limited Access</div>
-          <div className="text-[10px] text-slate-500 px-2 mt-0.5">Add, register & rename students</div>
+          <div className="text-[10px] text-slate-500 px-2 mt-0.5">Add, register & rename teachers</div>
         </div>
       </aside>
 
