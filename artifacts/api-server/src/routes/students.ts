@@ -93,7 +93,7 @@ router.post("/", async (req, res) => {
   let timeValue: string;
   if (providedTime && providedTime.length > 0) {
     timeValue = providedTime;
-  } else if (chosenStatus === "PRESENT" || chosenStatus === "IN") {
+  } else if (chosenStatus === "IN") {
     timeValue = autoTime;
   } else {
     timeValue = "N/A";
