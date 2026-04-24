@@ -5,6 +5,7 @@ import {
   useUpdateStudent,
   useGetStudent,
   useCreateStudent,
+  useDeleteStudent,
   getListStudentsQueryKey,
   getGetStudentSummaryQueryKey,
   getGetStudentQueryKey,
@@ -52,6 +53,7 @@ export default function Dashboard() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const todayPH = getTodayPH();
@@ -73,6 +75,7 @@ export default function Dashboard() {
   const { data: studentDetails } = useGetStudent(editingStudent?.id || 0, { query: { enabled: !!editingStudent?.id, queryKey: getGetStudentQueryKey(editingStudent?.id || 0) } });
   const updateStudent = useUpdateStudent();
   const createStudent = useCreateStudent();
+  const deleteStudent = useDeleteStudent();
 
   const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -91,9 +94,22 @@ export default function Dashboard() {
     updateStudent.mutate({ id: editingStudent.id, data }, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetStudentSummaryQueryKey() }); setEditingStudent(null); toast({ title: "Record updated successfully" }); }, onError: () => toast({ title: "Failed to update record", variant: "destructive" }) });
   };
 
-  const handleDelete = (student: Student) => {
-    if (!window.confirm(`Delete ${student.name}?`)) return;
-    toast({ title: "Delete is not available yet", variant: "destructive" });
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    deleteStudent.mutate(
+      { id: deleteTarget.id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetStudentSummaryQueryKey() });
+          if (editingStudent?.id === deleteTarget.id) setEditingStudent(null);
+          if (viewingStudent?.id === deleteTarget.id) setViewingStudent(null);
+          setDeleteTarget(null);
+          toast({ title: "Teacher deleted successfully" });
+        },
+        onError: () => toast({ title: "Failed to delete teacher", variant: "destructive" }),
+      },
+    );
   };
 
   const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
@@ -200,7 +216,7 @@ export default function Dashboard() {
                     <TableCell className="no-print">
                       <div className="flex items-center gap-1">
                         <Button type="button" variant="ghost" size="icon" onClick={() => setEditingStudent(student)}><Edit2 className="h-4 w-4" /></Button>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(student)}><Trash2 className="h-4 w-4 text-rose-600" /></Button>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => setDeleteTarget(student)}><Trash2 className="h-4 w-4 text-rose-600" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -246,6 +262,24 @@ export default function Dashboard() {
             </div>
             <DialogFooter><Button type="button" variant="outline" onClick={() => setEditingStudent(null)}>Cancel</Button><Button type="submit" disabled={updateStudent.isPending}>{updateStudent.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save Changes</Button></DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-slate-900">Delete Teacher</DialogTitle>
+          </DialogHeader>
+          <div className="py-3 text-sm text-slate-600">
+            Are you sure you want to delete {deleteTarget?.name || "this teacher"}?
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button type="button" variant="destructive" onClick={handleDelete} disabled={deleteStudent.isPending}>
+              {deleteStudent.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
