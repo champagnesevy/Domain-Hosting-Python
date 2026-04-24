@@ -10,12 +10,11 @@ import {
   getGetStudentQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Edit2, Loader2, BookOpen, Clock, X, Check, Filter, Users, Plus, Printer, Download, Calendar } from "lucide-react";
+import { Search, Loader2, BookOpen, Clock, X, Check, Filter, Users, Plus, Printer, Download, Calendar, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -71,7 +70,7 @@ export default function Dashboard() {
     dateFilter: dateFilter === "ALL" ? undefined : (dateFilter as any),
   });
   const { data: summary, isLoading: isLoadingSummary } = useGetStudentSummary();
-  const { data: studentDetails, isLoading: isLoadingDetails } = useGetStudent(editingStudent?.id || 0, { query: { enabled: !!editingStudent?.id, queryKey: getGetStudentQueryKey(editingStudent?.id || 0) } });
+  const { data: studentDetails } = useGetStudent(editingStudent?.id || 0, { query: { enabled: !!editingStudent?.id, queryKey: getGetStudentQueryKey(editingStudent?.id || 0) } });
   const updateStudent = useUpdateStudent();
   const createStudent = useCreateStudent();
 
@@ -173,13 +172,14 @@ export default function Dashboard() {
                 <TableHead className="font-semibold text-slate-600 h-12">Time</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Status</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Remarks</TableHead>
+                <TableHead className="font-semibold text-slate-600 h-12 no-print">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoadingStudents ? (
-                <TableRow><TableCell colSpan={9} className="h-32 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="h-32 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></TableCell></TableRow>
               ) : students?.length === 0 ? (
-                <TableRow><TableCell colSpan={9} className="h-32 text-center text-slate-500">No records found.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="h-32 text-center text-slate-500">No records found.</TableCell></TableRow>
               ) : (
                 students?.map((student, i) => (
                   <TableRow key={student.id} className="group hover:bg-slate-50/50 transition-colors animate-in fade-in fill-mode-both" style={{ animationDelay: `${i * 50}ms` }}>
@@ -192,6 +192,9 @@ export default function Dashboard() {
                     <TableCell className="text-slate-600 whitespace-nowrap">{student.time}</TableCell>
                     <TableCell>{student.status}</TableCell>
                     <TableCell>{student.remarks}</TableCell>
+                    <TableCell className="no-print">
+                      <Button type="button" variant="ghost" size="icon" onClick={() => setEditingStudent(student)}><Edit2 className="h-4 w-4" /></Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -207,58 +210,33 @@ export default function Dashboard() {
               <DialogTitle className="text-lg font-semibold text-slate-900">Add Teacher</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="add-name">Full Name <span className="text-rose-500">*</span></Label>
-                <Input id="add-name" name="name" placeholder="e.g. Juan dela Cruz" required />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="add-block">Block</Label>
-                  <Input id="add-block" name="block" placeholder="e.g. 4.2 BSIT" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="add-room">Room Number</Label>
-                  <Input id="add-room" name="room" placeholder="e.g. 403" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="add-subject">Subject</Label>
-                  <Input id="add-subject" name="subject" placeholder="e.g. Mathematics" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="add-course-code">Course Code</Label>
-                  <Input id="add-course-code" name="courseCode" placeholder="e.g. MATH101" />
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="add-status">Status</Label>
-                <Select name="status">
-                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                  <SelectContent>
-                    {statusOptions.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="add-date">Date</Label>
-                  <Input id="add-date" name="date" type="date" defaultValue={todayPH} max={todayPH} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="add-time">Time</Label>
-                  <Input id="add-time" name="time" placeholder="e.g. 9:00 AM" />
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="add-remarks">Remarks</Label>
-                <Input id="add-remarks" name="remarks" placeholder="Optional remarks" />
-              </div>
+              <div className="grid gap-2"><Label htmlFor="add-name">Full Name <span className="text-rose-500">*</span></Label><Input id="add-name" name="name" placeholder="e.g. Juan dela Cruz" required /></div>
+              <div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label htmlFor="add-block">Block</Label><Input id="add-block" name="block" placeholder="e.g. 4.2 BSIT" /></div><div className="grid gap-2"><Label htmlFor="add-room">Room</Label><Input id="add-room" name="room" placeholder="e.g. 403" /></div></div>
+              <div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label htmlFor="add-subject">Subject</Label><Input id="add-subject" name="subject" placeholder="e.g. Mathematics" /></div><div className="grid gap-2"><Label htmlFor="add-course-code">Course Code</Label><Input id="add-course-code" name="courseCode" placeholder="e.g. MATH101" /></div></div>
+              <div className="grid gap-2"><Label htmlFor="add-status">Status</Label><Select name="status"><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent>{statusOptions.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent></Select></div>
+              <div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label htmlFor="add-date">Date</Label><Input id="add-date" name="date" type="date" defaultValue={todayPH} max={todayPH} /></div><div className="grid gap-2"><Label htmlFor="add-time">Time</Label><Input id="add-time" name="time" placeholder="e.g. 9:00 AM" /></div></div>
+              <div className="grid gap-2"><Label htmlFor="add-remarks">Remarks</Label><Input id="add-remarks" name="remarks" placeholder="Optional remarks" /></div>
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={createStudent.isPending}>{createStudent.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Add Teacher</Button>
-            </DialogFooter>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button><Button type="submit" disabled={createStudent.isPending}>{createStudent.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Add Teacher</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editingStudent} onOpenChange={(open) => !open && setEditingStudent(null)}>
+        <DialogContent className="sm:max-w-[500px]">
+          <form onSubmit={handleUpdate}>
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold text-slate-900">Edit Teacher</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2"><Label htmlFor="edit-name">Full Name</Label><Input id="edit-name" name="name" defaultValue={studentDetails?.name || editingStudent?.name || ""} /></div>
+              <div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label htmlFor="edit-block">Block</Label><Input id="edit-block" name="block" defaultValue={studentDetails?.block || editingStudent?.block || ""} /></div><div className="grid gap-2"><Label htmlFor="edit-room">Room</Label><Input id="edit-room" name="room" defaultValue={studentDetails?.room || editingStudent?.room || ""} /></div></div>
+              <div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label htmlFor="edit-subject">Subject</Label><Input id="edit-subject" name="course" defaultValue={studentDetails?.course || editingStudent?.course || ""} /></div><div className="grid gap-2"><Label htmlFor="edit-course-code">Course Code</Label><Input id="edit-course-code" name="courseCode" defaultValue={studentDetails?.courseCode || editingStudent?.courseCode || ""} /></div></div>
+              <div className="grid gap-2"><Label htmlFor="edit-status">Status</Label><Select name="status" defaultValue={(studentDetails?.status || editingStudent?.status || "N/A") as string}><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent>{statusOptions.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent></Select></div>
+              <div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label htmlFor="edit-date">Date</Label><Input id="edit-date" name="date" type="date" defaultValue={studentDetails?.date || editingStudent?.date || todayPH} max={todayPH} /></div><div className="grid gap-2"><Label htmlFor="edit-time">Time</Label><Input id="edit-time" name="time" defaultValue={studentDetails?.time || editingStudent?.time || ""} /></div></div>
+              <div className="grid gap-2"><Label htmlFor="edit-remarks">Remarks</Label><Input id="edit-remarks" name="remarks" defaultValue={studentDetails?.remarks || editingStudent?.remarks || ""} /></div>
+            </div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setEditingStudent(null)}>Cancel</Button><Button type="submit" disabled={updateStudent.isPending}>{updateStudent.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save Changes</Button></DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
