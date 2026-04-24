@@ -10,6 +10,7 @@ export const studentsTable = pgTable("students", {
   yearLevel: text("year_level"),
   block: text("block").notNull().default("TBD"),
   course: text("course").notNull().default("TBD"),
+  courseCode: text("course_code").notNull().default("TBD"),
   room: text("room").notNull().default("TBD"),
   date: text("date").notNull().default(""),
   time: text("time").notNull().default("N/A"),

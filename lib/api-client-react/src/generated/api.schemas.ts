@@ -25,6 +25,7 @@ export interface Student {
   yearLevel?: string;
   block: string;
   course: string;
+  courseCode: string;
   room: string;
   date: string;
   time: string;
@@ -49,6 +50,7 @@ export interface CreateStudentRequest {
   yearLevel?: string;
   block?: string;
   course?: string;
+  courseCode?: string;
   room?: string;
   date?: string;
   time?: string;
@@ -72,6 +74,7 @@ export interface UpdateStudentRequest {
   yearLevel?: string;
   block?: string;
   course?: string;
+  courseCode?: string;
   room?: string;
   date?: string;
   time?: string;

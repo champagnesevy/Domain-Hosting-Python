@@ -12,23 +12,29 @@ import {
 
 const router = Router();
 
-/** Returns today's date as YYYY-MM-DD in Philippine time (UTC+8) */
 function getTodayPH(): string {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
 }
 
-/** Returns a YYYY-MM-DD date string shifted by `days` from today in PH time */
 function getDateOffsetPH(days: number): string {
   const d = new Date();
   d.setDate(d.getDate() + days);
   return d.toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
 }
 
-/** Returns the first day of the current month in PH time as YYYY-MM-DD */
 function getFirstOfMonthPH(): string {
   const d = new Date();
   const phStr = d.toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
   return phStr.slice(0, 7) + "-01";
+}
+
+function serialize(t: typeof studentsTable.$inferSelect) {
+  return {
+    ...t,
+    yearLevel: t.yearLevel ?? undefined,
+    email: t.email ?? undefined,
+    phone: t.phone ?? undefined,
+  };
 }
 
 router.get("/", async (req, res) => {
@@ -38,49 +44,30 @@ router.get("/", async (req, res) => {
     return;
   }
   const { search, status, remarks, dateFilter } = parsed.data;
-
   const conditions = [];
-
   if (search) {
     conditions.push(
       or(
         ilike(studentsTable.name, `%${search}%`),
         ilike(studentsTable.block, `%${search}%`),
         ilike(studentsTable.course, `%${search}%`),
+        ilike(studentsTable.courseCode, `%${search}%`),
         ilike(studentsTable.room, `%${search}%`),
       ),
     );
   }
-  if (status) {
-    conditions.push(eq(studentsTable.status, status));
-  }
-  if (remarks) {
-    conditions.push(ilike(studentsTable.remarks, `%${remarks}%`));
-  }
-  if (dateFilter === "today") {
-    conditions.push(eq(studentsTable.date, getTodayPH()));
-  } else if (dateFilter === "week") {
-    conditions.push(gte(studentsTable.date, getDateOffsetPH(-6)));
-  } else if (dateFilter === "month") {
-    conditions.push(gte(studentsTable.date, getFirstOfMonthPH()));
-  }
+  if (status) conditions.push(eq(studentsTable.status, status));
+  if (remarks) conditions.push(ilike(studentsTable.remarks, `%${remarks}%`));
+  if (dateFilter === "today") conditions.push(eq(studentsTable.date, getTodayPH()));
+  else if (dateFilter === "week") conditions.push(gte(studentsTable.date, getDateOffsetPH(-6)));
+  else if (dateFilter === "month") conditions.push(gte(studentsTable.date, getFirstOfMonthPH()));
 
-  const students =
+  const teachers =
     conditions.length > 0
-      ? await db
-          .select()
-          .from(studentsTable)
-          .where(and(...conditions))
+      ? await db.select().from(studentsTable).where(and(...conditions))
       : await db.select().from(studentsTable);
 
-  res.json(
-    students.map((s) => ({
-      ...s,
-      yearLevel: s.yearLevel ?? undefined,
-      email: s.email ?? undefined,
-      phone: s.phone ?? undefined,
-    })),
-  );
+  res.json(teachers.map(serialize));
 });
 
 router.post("/", async (req, res) => {
@@ -106,7 +93,7 @@ router.post("/", async (req, res) => {
   let timeValue: string;
   if (providedTime && providedTime.length > 0) {
     timeValue = providedTime;
-  } else if (chosenStatus === "IN") {
+  } else if (chosenStatus === "PRESENT" || chosenStatus === "IN") {
     timeValue = autoTime;
   } else {
     timeValue = "N/A";
@@ -121,6 +108,7 @@ router.post("/", async (req, res) => {
       yearLevel: parsed.data.yearLevel ?? null,
       block: parsed.data.block ?? "TBD",
       course: parsed.data.course ?? "TBD",
+      courseCode: parsed.data.courseCode ?? "TBD",
       room: parsed.data.room ?? "TBD",
       date: providedDate && providedDate.length > 0 ? providedDate : todayPH,
       time: timeValue,
@@ -129,21 +117,16 @@ router.post("/", async (req, res) => {
     })
     .returning();
 
-  res.status(201).json({
-    ...created,
-    yearLevel: created.yearLevel ?? undefined,
-    email: created.email ?? undefined,
-    phone: created.phone ?? undefined,
-  });
+  res.status(201).json(serialize(created));
 });
 
 router.get("/stats/summary", async (_req, res) => {
   const [result] = await db
     .select({
       total: sql<number>`count(*)::int`,
-      present: sql<number>`sum(case when remarks = 'PRESENT' then 1 else 0 end)::int`,
-      absent: sql<number>`sum(case when remarks = 'ABSENT' then 1 else 0 end)::int`,
-      late: sql<number>`sum(case when remarks = 'LATE' then 1 else 0 end)::int`,
+      present: sql<number>`sum(case when remarks ILIKE 'PRESENT%' then 1 else 0 end)::int`,
+      absent: sql<number>`sum(case when remarks ILIKE 'ABSENT%' then 1 else 0 end)::int`,
+      late: sql<number>`sum(case when remarks ILIKE 'LATE%' then 1 else 0 end)::int`,
     })
     .from(studentsTable);
 
@@ -161,23 +144,12 @@ router.get("/:id", async (req, res) => {
     res.status(400).json({ message: "Invalid id" });
     return;
   }
-
-  const [student] = await db
-    .select()
-    .from(studentsTable)
-    .where(eq(studentsTable.id, parsed.data.id));
-
-  if (!student) {
-    res.status(404).json({ message: "Student not found" });
+  const [teacher] = await db.select().from(studentsTable).where(eq(studentsTable.id, parsed.data.id));
+  if (!teacher) {
+    res.status(404).json({ message: "Teacher not found" });
     return;
   }
-
-  res.json({
-    ...student,
-    yearLevel: student.yearLevel ?? undefined,
-    email: student.email ?? undefined,
-    phone: student.phone ?? undefined,
-  });
+  res.json(serialize(teacher));
 });
 
 router.put("/:id", async (req, res) => {
@@ -191,26 +163,20 @@ router.put("/:id", async (req, res) => {
     res.status(400).json({ message: "Invalid body" });
     return;
   }
-
-  const existing = await db
-    .select()
-    .from(studentsTable)
-    .where(eq(studentsTable.id, paramsParsed.data.id));
-
+  const existing = await db.select().from(studentsTable).where(eq(studentsTable.id, paramsParsed.data.id));
   if (!existing.length) {
-    res.status(404).json({ message: "Student not found" });
+    res.status(404).json({ message: "Teacher not found" });
     return;
   }
-
   const data = bodyParsed.data;
   const updateValues: Record<string, unknown> = {};
-
   if (data.name !== undefined) updateValues.name = data.name;
   if (data.email !== undefined) updateValues.email = data.email;
   if (data.phone !== undefined) updateValues.phone = data.phone;
   if (data.yearLevel !== undefined) updateValues.yearLevel = data.yearLevel;
   if (data.block !== undefined) updateValues.block = data.block;
   if (data.course !== undefined) updateValues.course = data.course;
+  if (data.courseCode !== undefined) updateValues.courseCode = data.courseCode;
   if (data.room !== undefined) updateValues.room = data.room;
   if (data.remarks !== undefined) updateValues.remarks = data.remarks;
   if (data.status !== undefined) updateValues.status = data.status;
@@ -219,19 +185,12 @@ router.put("/:id", async (req, res) => {
     const d = data.date.trim();
     if (d) updateValues.date = d;
   }
-
   const [updated] = await db
     .update(studentsTable)
     .set(updateValues)
     .where(eq(studentsTable.id, paramsParsed.data.id))
     .returning();
-
-  res.json({
-    ...updated,
-    yearLevel: updated.yearLevel ?? undefined,
-    email: updated.email ?? undefined,
-    phone: updated.phone ?? undefined,
-  });
+  res.json(serialize(updated));
 });
 
 router.delete("/:id", async (req, res) => {
@@ -240,17 +199,11 @@ router.delete("/:id", async (req, res) => {
     res.status(400).json({ message: "Invalid id" });
     return;
   }
-
-  const existing = await db
-    .select()
-    .from(studentsTable)
-    .where(eq(studentsTable.id, parsed.data.id));
-
+  const existing = await db.select().from(studentsTable).where(eq(studentsTable.id, parsed.data.id));
   if (!existing.length) {
-    res.status(404).json({ message: "Student not found" });
+    res.status(404).json({ message: "Teacher not found" });
     return;
   }
-
   await db.delete(studentsTable).where(eq(studentsTable.id, parsed.data.id));
   res.status(204).send();
 });

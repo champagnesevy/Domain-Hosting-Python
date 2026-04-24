@@ -148,6 +148,7 @@ export default function Dashboard() {
     const block = (formData.get("block") as string).trim();
     const room = (formData.get("room") as string).trim();
     const subject = (formData.get("subject") as string).trim();
+    const courseCode = (formData.get("courseCode") as string).trim();
     const date = (formData.get("date") as string).trim();
     const time = (formData.get("time") as string).trim();
     const remarks = (formData.get("remarks") as string).trim();
@@ -163,6 +164,7 @@ export default function Dashboard() {
         block: block || "TBD",
         room: room || "TBD",
         course: subject || "TBD",
+        courseCode: courseCode || "TBD",
         date: date || todayPH,
         time: time || "N/A",
         status: "N/A",
@@ -392,6 +394,7 @@ export default function Dashboard() {
                 <TableHead className="font-semibold text-slate-600 h-12">Name</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Block</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Subject</TableHead>
+                <TableHead className="font-semibold text-slate-600 h-12">Course Code</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Room</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Date</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Time</TableHead>
@@ -402,13 +405,13 @@ export default function Dashboard() {
             <TableBody>
               {isLoadingStudents ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="h-32 text-center">
+                  <TableCell colSpan={10} className="h-32 text-center">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
                   </TableCell>
                 </TableRow>
               ) : students?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="h-32 text-center text-slate-500">
+                  <TableCell colSpan={10} className="h-32 text-center text-slate-500">
                     No records found.
                   </TableCell>
                 </TableRow>
@@ -430,6 +433,7 @@ export default function Dashboard() {
                         {student.course}
                       </div>
                     </TableCell>
+                    <TableCell className="text-slate-600 font-mono text-xs uppercase">{student.courseCode || "—"}</TableCell>
                     <TableCell className="text-slate-600">{student.room}</TableCell>
                     <TableCell className="text-slate-500 whitespace-nowrap text-sm">
                       {formatDateDisplay(student.date)}
@@ -473,9 +477,15 @@ export default function Dashboard() {
                   <Input id="add-room" name="room" placeholder="e.g. 403" />
                 </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="add-subject">Subject</Label>
-                <Input id="add-subject" name="subject" placeholder="e.g. Mathematics" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="add-subject">Subject</Label>
+                  <Input id="add-subject" name="subject" placeholder="e.g. Mathematics" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="add-course-code">Course Code</Label>
+                  <Input id="add-course-code" name="courseCode" placeholder="e.g. MATH101" />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">

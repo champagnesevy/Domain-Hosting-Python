@@ -15,6 +15,7 @@ export interface Student {
   yearLevel?: string;
   block: string;
   course: string;
+  courseCode: string;
   room: string;
   date: string;
   time: string;

@@ -14,6 +14,7 @@ export interface CreateStudentRequest {
   yearLevel?: string;
   block?: string;
   course?: string;
+  courseCode?: string;
   room?: string;
   date?: string;
   time?: string;

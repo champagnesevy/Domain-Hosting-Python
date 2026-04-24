@@ -81,6 +81,7 @@ export default function AdminDashboard() {
     const block = (formData.get("block") as string | null)?.trim() || "TBD";
     const room = (formData.get("room") as string | null)?.trim() || "TBD";
     const subject = (formData.get("subject") as string | null)?.trim() || "TBD";
+    const courseCode = (formData.get("courseCode") as string | null)?.trim() || "TBD";
     const date = (formData.get("date") as string | null)?.trim() || todayPH;
     const time = (formData.get("time") as string | null)?.trim() || "N/A";
     const remarks = (formData.get("remarks") as string | null)?.trim() || "—";
@@ -92,6 +93,7 @@ export default function AdminDashboard() {
           block,
           room,
           course: subject,
+          courseCode,
           date,
           time,
           status: "N/A",
@@ -190,6 +192,7 @@ export default function AdminDashboard() {
               <TableHead className="font-semibold text-slate-600">Name</TableHead>
               <TableHead className="font-semibold text-slate-600">Block</TableHead>
               <TableHead className="font-semibold text-slate-600">Subject</TableHead>
+              <TableHead className="font-semibold text-slate-600">Course Code</TableHead>
               <TableHead className="font-semibold text-slate-600">Date</TableHead>
               <TableHead className="font-semibold text-slate-600">Time</TableHead>
               <TableHead className="font-semibold text-slate-600">Status</TableHead>
@@ -199,14 +202,14 @@ export default function AdminDashboard() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-12 text-slate-400">
+                <TableCell colSpan={9} className="text-center py-12 text-slate-400">
                   <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
                   Loading teachers...
                 </TableCell>
               </TableRow>
             ) : !students?.length ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-12 text-slate-400">
+                <TableCell colSpan={9} className="text-center py-12 text-slate-400">
                   <User className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   {search ? "No teachers match your search." : "No teachers found. Add one to get started."}
                 </TableCell>
@@ -218,6 +221,7 @@ export default function AdminDashboard() {
                   <TableCell className="font-medium text-slate-800">{student.name}</TableCell>
                   <TableCell className="text-slate-600">{student.block}</TableCell>
                   <TableCell className="text-slate-600">{student.course}</TableCell>
+                  <TableCell className="text-slate-600 font-mono text-xs uppercase">{student.courseCode || "—"}</TableCell>
                   <TableCell className="text-slate-600">{student.date || "—"}</TableCell>
                   <TableCell className="text-slate-600">{student.time || "—"}</TableCell>
                   <TableCell className="text-slate-600">{student.status || "—"}</TableCell>
@@ -264,9 +268,15 @@ export default function AdminDashboard() {
                   <Input id="add-room" name="room" placeholder="e.g. 403" />
                 </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="add-subject">Subject</Label>
-                <Input id="add-subject" name="subject" placeholder="e.g. Mathematics" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="add-subject">Subject</Label>
+                  <Input id="add-subject" name="subject" placeholder="e.g. Mathematics" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="add-course-code">Course Code</Label>
+                  <Input id="add-course-code" name="courseCode" placeholder="e.g. MATH101" />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">

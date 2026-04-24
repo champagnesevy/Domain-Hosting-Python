@@ -186,6 +186,8 @@ components:
           type: string
         course:
           type: string
+        courseCode:
+          type: string
         room:
           type: string
         date:
@@ -205,6 +207,7 @@ components:
         - name
         - block
         - course
+        - courseCode
         - room
         - date
         - time
@@ -225,6 +228,8 @@ components:
         block:
           type: string
         course:
+          type: string
+        courseCode:
           type: string
         room:
           type: string
@@ -253,6 +258,8 @@ components:
         block:
           type: string
         course:
+          type: string
+        courseCode:
           type: string
         room:
           type: string
