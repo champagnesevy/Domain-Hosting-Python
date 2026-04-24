@@ -125,7 +125,7 @@ export default function Dashboard() {
     const remarks = (formData.get("remarks") as string).trim();
     const status = (formData.get("status") as string).trim();
     if (!name) { toast({ title: "Full name is required", variant: "destructive" }); return; }
-    createStudent.mutate({ data: { name, block: block || "TBD", room: room || "TBD", course: subject || "TBD", courseCode: courseCode || "TBD", date: date || todayPH, time: time || "N/A", status: (status || "N/A") as any, remarks: remarks || "—" } }, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetStudentSummaryQueryKey() }); setAddOpen(false); (e.target as HTMLFormElement).reset(); toast({ title: "Teacher added successfully" }); }, onError: () => toast({ title: "Failed to add teacher", variant: "destructive" }) });
+    createStudent.mutate({ data: { name, block: block || "TBD", room: room || "TBD", course: subject || "TBD", courseCode: courseCode || "TBD", date: date || todayPH, time: time || "N/A", status: (status || "N/A") as any, remarks: remarks || "" } }, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetStudentSummaryQueryKey() }); setAddOpen(false); (e.target as HTMLFormElement).reset(); toast({ title: "Teacher added successfully" }); }, onError: () => toast({ title: "Failed to add teacher", variant: "destructive" }) });
   };
 
   const handleExportCSV = () => {

@@ -39,7 +39,7 @@ export default function AdminDashboard() {
     const date = (formData.get("date") as string | null)?.trim() || todayPH;
     const time = (formData.get("time") as string | null)?.trim() || "N/A";
     const status = (formData.get("status") as string | null)?.trim() || "Present";
-    const remarks = (formData.get("remarks") as string | null)?.trim() || undefined;
+    const remarks = (formData.get("remarks") as string | null)?.trim() || "";
     createStudent.mutate(
       { data: { name, block, room, course: subject, courseCode, date, time, status: status as any, remarks } },
       {
@@ -77,7 +77,7 @@ export default function AdminDashboard() {
         <Table>
           <TableHeader><TableRow className="bg-slate-50/70 hover:bg-slate-50/70"><TableHead className="font-semibold text-slate-600">#</TableHead><TableHead className="font-semibold text-slate-600">Name</TableHead><TableHead className="font-semibold text-slate-600">Block</TableHead><TableHead className="font-semibold text-slate-600">Subject</TableHead><TableHead className="font-semibold text-slate-600">Course Code</TableHead><TableHead className="font-semibold text-slate-600">Status</TableHead><TableHead className="font-semibold text-slate-600">Remarks</TableHead></TableRow></TableHeader>
           <TableBody>
-            {isLoading ? <TableRow><TableCell colSpan={7} className="text-center py-12 text-slate-400"><Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />Loading teachers...</TableCell></TableRow> : !students?.length ? <TableRow><TableCell colSpan={7} className="text-center py-12 text-slate-400"><User className="h-8 w-8 mx-auto mb-2 opacity-30" />{search ? "No teachers match your search." : "No teachers found. Add one to get started."}</TableCell></TableRow> : students.map((student, idx) => <TableRow key={student.id} className="hover:bg-slate-50/60"><TableCell className="text-slate-400 text-sm w-12">{idx + 1}</TableCell><TableCell className="font-medium text-slate-800">{student.name}</TableCell><TableCell className="text-slate-600">{student.block}</TableCell><TableCell className="text-slate-600">{student.course}</TableCell><TableCell className="text-slate-600 font-mono text-xs uppercase">{student.courseCode || "—"}</TableCell><TableCell className="text-slate-600">{student.status || "—"}</TableCell><TableCell className="text-slate-600">{student.remarks || "—"}</TableCell></TableRow>)}
+            {isLoading ? <TableRow><TableCell colSpan={7} className="text-center py-12 text-slate-400"><Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />Loading teachers...</TableCell></TableRow> : !students?.length ? <TableRow><TableCell colSpan={7} className="text-center py-12 text-slate-400"><User className="h-8 w-8 mx-auto mb-2 opacity-30" />{search ? "No teachers match your search." : "No teachers found. Add one to get started."}</TableCell></TableRow> : students.map((student, idx) => <TableRow key={student.id} className="hover:bg-slate-50/60"><TableCell className="text-slate-400 text-sm w-12">{idx + 1}</TableCell><TableCell className="font-medium text-slate-800">{student.name}</TableCell><TableCell className="text-slate-600">{student.block}</TableCell><TableCell className="text-slate-600">{student.course}</TableCell><TableCell className="text-slate-600 font-mono text-xs uppercase">{student.courseCode || "—"}</TableCell><TableCell className="text-slate-600">{student.status || "—"}</TableCell><TableCell className="text-slate-600">{student.remarks}</TableCell></TableRow>)}
           </TableBody>
         </Table>
       </div>
