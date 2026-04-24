@@ -10,7 +10,7 @@ import {
   getGetStudentQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Loader2, BookOpen, Clock, X, Check, Filter, Users, Plus, Printer, Download, Calendar, Edit2 } from "lucide-react";
+import { Search, Loader2, BookOpen, Clock, X, Check, Filter, Users, Plus, Printer, Download, Calendar, Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,6 +89,11 @@ export default function Dashboard() {
       remarks: formData.get("remarks") as string,
     };
     updateStudent.mutate({ id: editingStudent.id, data }, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetStudentSummaryQueryKey() }); setEditingStudent(null); toast({ title: "Record updated successfully" }); }, onError: () => toast({ title: "Failed to update record", variant: "destructive" }) });
+  };
+
+  const handleDelete = (student: Student) => {
+    if (!window.confirm(`Delete ${student.name}?`)) return;
+    toast({ title: "Delete is not available yet", variant: "destructive" });
   };
 
   const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
@@ -193,7 +198,10 @@ export default function Dashboard() {
                     <TableCell>{student.status}</TableCell>
                     <TableCell>{student.remarks}</TableCell>
                     <TableCell className="no-print">
-                      <Button type="button" variant="ghost" size="icon" onClick={() => setEditingStudent(student)}><Edit2 className="h-4 w-4" /></Button>
+                      <div className="flex items-center gap-1">
+                        <Button type="button" variant="ghost" size="icon" onClick={() => setEditingStudent(student)}><Edit2 className="h-4 w-4" /></Button>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(student)}><Trash2 className="h-4 w-4 text-rose-600" /></Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
