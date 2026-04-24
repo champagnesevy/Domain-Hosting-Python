@@ -124,9 +124,9 @@ router.get("/stats/summary", async (_req, res) => {
   const [result] = await db
     .select({
       total: sql<number>`count(*)::int`,
-      present: sql<number>`sum(case when remarks ILIKE 'PRESENT%' then 1 else 0 end)::int`,
-      absent: sql<number>`sum(case when remarks ILIKE 'ABSENT%' then 1 else 0 end)::int`,
-      late: sql<number>`sum(case when remarks ILIKE 'LATE%' then 1 else 0 end)::int`,
+      present: sql<number>`sum(case when status ILIKE 'present%' then 1 else 0 end)::int`,
+      absent: sql<number>`sum(case when status ILIKE 'absent%' then 1 else 0 end)::int`,
+      late: sql<number>`sum(case when status ILIKE 'late%' then 1 else 0 end)::int`,
     })
     .from(studentsTable);
 
