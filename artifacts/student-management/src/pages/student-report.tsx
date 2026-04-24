@@ -1,7 +1,12 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useCreateStudent } from "@workspace/api-client-react";
+import {
+  useCreateStudent,
+  getListStudentsQueryKey,
+  getGetStudentSummaryQueryKey,
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import {
@@ -18,6 +23,7 @@ import {
   Eye,
   EyeOff,
   LayoutDashboard,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +59,7 @@ const formSchema = z.object({
   course: z.string().min(1, "Course code is required"),
   room: z.string().min(1, "Room number is required"),
   status: z.enum(STATUS_OPTIONS),
+  time: z.string().optional(),
   remarks: z.string().optional(),
 });
 
@@ -65,6 +72,7 @@ const defaultValues: FormValues = {
   course: "",
   room: "",
   status: "Present",
+  time: "",
   remarks: "",
 };
 
@@ -144,6 +152,7 @@ function PinGate({ onUnlock }: { onUnlock: () => void }) {
 export default function StudentReport() {
   const { toast } = useToast();
   const createStudent = useCreateStudent();
+  const queryClient = useQueryClient();
   const [unlocked, setUnlocked] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -159,12 +168,15 @@ export default function StudentReport() {
       courseCode: data.course,
       room: data.room,
       status: data.status,
+      time: data.time?.trim() || undefined,
       remarks: data.remarks?.trim() || undefined,
     };
     createStudent.mutate(
       { data: payload },
       {
         onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetStudentSummaryQueryKey() });
           setSubmitted(true);
           form.reset(defaultValues);
         },
@@ -199,7 +211,10 @@ export default function StudentReport() {
                 <FormField control={form.control} name="subject" render={({ field }) => <FormItem><FormLabel>Subject <span className="text-rose-500">*</span></FormLabel><FormControl><div className="relative"><BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" /><Input placeholder="e.g. Mathematics" className="pl-9" {...field} /></div></FormControl><FormMessage /></FormItem>} />
                 <FormField control={form.control} name="course" render={({ field }) => <FormItem><FormLabel>Course Code <span className="text-rose-500">*</span></FormLabel><FormControl><div className="relative"><Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" /><Input placeholder="e.g. MATH101" className="pl-9" {...field} /></div></FormControl><FormMessage /></FormItem>} />
               </div>
-              <div className="pt-2 border-t border-slate-100"><FormField control={form.control} name="status" render={({ field }) => <FormItem><FormLabel>Status <span className="text-rose-500">*</span></FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="w-full"><div className="flex items-center gap-2"><Activity className="h-4 w-4 text-slate-400 shrink-0" /><SelectValue placeholder="Select status" /></div></SelectTrigger></FormControl><SelectContent>{STATUS_OPTIONS.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} /></div>
+              <div className="pt-2 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <FormField control={form.control} name="status" render={({ field }) => <FormItem><FormLabel>Status <span className="text-rose-500">*</span></FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="w-full"><div className="flex items-center gap-2"><Activity className="h-4 w-4 text-slate-400 shrink-0" /><SelectValue placeholder="Select status" /></div></SelectTrigger></FormControl><SelectContent>{STATUS_OPTIONS.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
+                <FormField control={form.control} name="time" render={({ field }) => <FormItem><FormLabel>Time (optional)</FormLabel><FormControl><div className="relative"><Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" /><Input placeholder="e.g. 9:00 AM" className="pl-9" {...field} /></div></FormControl><FormMessage /></FormItem>} />
+              </div>
               <FormField control={form.control} name="remarks" render={({ field }) => <FormItem><FormLabel>Remarks (optional)</FormLabel><FormControl><Input placeholder="Add any optional notes..." {...field} /></FormControl><FormMessage /></FormItem>} />
               <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100"><Button type="button" variant="outline" className="sm:w-auto w-full order-2 sm:order-1" onClick={handleCancel} disabled={createStudent.isPending}>Cancel</Button><Button type="submit" className="sm:flex-1 w-full order-1 sm:order-2 gap-2" disabled={createStudent.isPending}>{createStudent.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardCheck className="h-4 w-4" />}Submit Report</Button></div>
             </form></Form></div>
