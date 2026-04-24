@@ -101,13 +101,13 @@ function PinGate({ onUnlock }: { onUnlock: () => void }) {
           <div className="flex items-center gap-3">
             <GraduationCap className="h-6 w-6 text-primary" />
             <span className="font-semibold text-slate-800 text-lg tracking-tight">
-              Student Attendance Report
+              Teacher Attendance Report
             </span>
           </div>
           <Link href="/report">
             <button className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors px-2 py-1 rounded hover:bg-slate-100">
               <LayoutDashboard className="h-3.5 w-3.5" />
-              Student Report
+              Teacher Report
             </button>
           </Link>
         </div>

@@ -75,7 +75,7 @@ export function Layout({ children }: LayoutProps) {
           <Link href="/student-report" onClick={close}>
             <div className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all cursor-pointer border border-sidebar-border/40">
               <ExternalLink className="h-3.5 w-3.5 opacity-70 shrink-0" />
-              User Report Form
+              Student Beadle Report Form
             </div>
           </Link>
           <Link href="/admin" onClick={close}>

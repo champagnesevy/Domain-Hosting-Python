@@ -22,7 +22,6 @@ const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
   phone: z.string().optional(),
-  yearLevel: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -38,7 +37,6 @@ export default function AdminRegister() {
       name: "",
       email: "",
       phone: "",
-      yearLevel: "",
     },
   });
 
@@ -54,7 +52,7 @@ export default function AdminRegister() {
       }
     }, {
       onSuccess: () => {
-        toast({ title: "Student registered successfully!" });
+          toast({ title: "Teacher registered successfully!" });
         setLocation("/admin");
       },
       onError: (err) => {
@@ -71,14 +69,14 @@ export default function AdminRegister() {
     <div className="p-8 max-w-3xl mx-auto animate-in fade-in duration-500">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">New Registration</h1>
-        <p className="text-slate-500 mt-1">Enroll a new student into the system database.</p>
+        <p className="text-slate-500 mt-1">Enroll a new teacher into the system database.</p>
       </div>
 
       <Card className="shadow-sm border-slate-200">
         <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-6">
           <CardTitle className="text-xl flex items-center text-primary">
             <UserPlus className="mr-2 h-5 w-5" />
-            Student Details
+            Teacher Details
           </CardTitle>
           <CardDescription>
             Provide the required contact and academic information.
@@ -141,33 +139,6 @@ export default function AdminRegister() {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="yearLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Year Level</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-full relative pl-9">
-                          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
-                            <GraduationCap className="h-4 w-4 text-slate-400" />
-                          </div>
-                          <SelectValue placeholder="Select year level" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="1st Year">1st Year</SelectItem>
-                        <SelectItem value="2nd Year">2nd Year</SelectItem>
-                        <SelectItem value="3rd Year">3rd Year</SelectItem>
-                        <SelectItem value="4th Year">4th Year</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <div className="pt-4 border-t border-slate-100 flex gap-3 justify-end">
                 <Button
                   type="button"
@@ -186,7 +157,7 @@ export default function AdminRegister() {
                   ) : (
                     <UserPlus className="mr-2 h-4 w-4" />
                   )}
-                  Register Student
+                  Register Teacher
                 </Button>
               </div>
             </form>

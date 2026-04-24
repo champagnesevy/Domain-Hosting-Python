@@ -175,9 +175,11 @@ export default function Report() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="IN">IN</SelectItem>
-                          <SelectItem value="OUT">OUT</SelectItem>
-                          <SelectItem value="N/A">N/A</SelectItem>
+                        <SelectItem value="PRESENT">Present</SelectItem>
+                        <SelectItem value="ABSENT">Absent</SelectItem>
+                        <SelectItem value="ABSENT_WITH_POST_ON_GCR">Absent with post on GCR</SelectItem>
+                        <SelectItem value="LATE">Late</SelectItem>
+                        <SelectItem value="LATE_WITH_POST_ON_GCR">Late with post on GCR</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -190,20 +192,10 @@ export default function Report() {
                   name="remarks"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Remarks <span className="text-destructive">*</span></FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select remarks" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="PRESENT">PRESENT</SelectItem>
-                          <SelectItem value="ABSENT">ABSENT</SelectItem>
-                          <SelectItem value="LATE">LATE</SelectItem>
-                          <SelectItem value="EXCUSED">EXCUSED</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>Remarks</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Optional remarks" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

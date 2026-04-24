@@ -266,7 +266,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 no-print">
         <Card className="border-slate-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6">
-            <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Students</CardTitle>
+            <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Teachers</CardTitle>
             <Users className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
@@ -365,7 +365,7 @@ export default function Dashboard() {
               className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Add Student</span>
+              <span className="hidden sm:inline">Add Teacher</span>
               <span className="inline sm:hidden">Add</span>
             </Button>
           </div>
@@ -491,12 +491,12 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Add Student Dialog */}
+      {/* Add Teacher Dialog */}
       <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) setAddRemarks("PRESENT"); }}>
         <DialogContent className="sm:max-w-[500px]">
           <form onSubmit={handleAdd}>
             <DialogHeader>
-              <DialogTitle className="text-lg font-semibold text-slate-900">Add Student</DialogTitle>
+              <DialogTitle className="text-lg font-semibold text-slate-900">Add Teacher</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
@@ -514,18 +514,8 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="add-year-level">Year Level</Label>
-                <Select name="yearLevel">
-                  <SelectTrigger className="w-full" id="add-year-level">
-                    <SelectValue placeholder="Select year level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1st Year">1st Year</SelectItem>
-                    <SelectItem value="2nd Year">2nd Year</SelectItem>
-                    <SelectItem value="3rd Year">3rd Year</SelectItem>
-                    <SelectItem value="4th Year">4th Year</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="add-subject">Subject</Label>
+                <Input id="add-subject" name="subject" placeholder="e.g. Mathematics" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
@@ -545,17 +535,7 @@ export default function Dashboard() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="add-remarks">Remarks</Label>
-                <Select value={addRemarks} onValueChange={setAddRemarks}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select remarks" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PRESENT">PRESENT</SelectItem>
-                    <SelectItem value="ABSENT">ABSENT</SelectItem>
-                    <SelectItem value="LATE">LATE</SelectItem>
-                    <SelectItem value="NEWLY REGISTERED">NEWLY REGISTERED</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input id="add-remarks" name="remarks" placeholder="Optional remarks" />
               </div>
             </div>
             <DialogFooter>
@@ -564,7 +544,7 @@ export default function Dashboard() {
               </Button>
               <Button type="submit" disabled={createStudent.isPending}>
                 {createStudent.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Add Student
+                Add Teacher
               </Button>
             </DialogFooter>
           </form>
