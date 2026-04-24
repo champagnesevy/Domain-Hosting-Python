@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { 
   useListStudents, 
   useGetStudentSummary, 
-  useDeleteStudent,
   useUpdateStudent,
   useGetStudent,
   useCreateStudent,
@@ -11,7 +10,7 @@ import {
   getGetStudentQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Edit2, Trash2, Loader2, BookOpen, Clock, X, Check, Filter, Users, Plus, Printer, Download, Calendar, Eye, Phone, Mail, GraduationCap, MapPin } from "lucide-react";
+import { Search, Edit2, Loader2, BookOpen, Clock, X, Check, Filter, Users, Plus, Printer, Download, Calendar, Eye, Phone, Mail, GraduationCap, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,7 +75,7 @@ export default function Dashboard() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [addRemarks, setAddRemarks] = useState("PRESENT");
+  const [addRemarks, setAddRemarks] = useState("");
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -112,23 +111,8 @@ export default function Dashboard() {
     { query: { enabled: !!editingStudent?.id, queryKey: getGetStudentQueryKey(editingStudent?.id || 0) } }
   );
 
-  const deleteStudent = useDeleteStudent();
   const updateStudent = useUpdateStudent();
   const createStudent = useCreateStudent();
-
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to remove this record?")) return;
-    deleteStudent.mutate({ id }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getGetStudentSummaryQueryKey() });
-        toast({ title: "Record removed successfully" });
-      },
-      onError: () => {
-        toast({ title: "Failed to remove record", variant: "destructive" });
-      }
-    });
-  };
 
   const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -163,36 +147,33 @@ export default function Dashboard() {
     const name = (formData.get("name") as string).trim();
     const block = (formData.get("block") as string).trim();
     const room = (formData.get("room") as string).trim();
-    const yearLevel = (formData.get("yearLevel") as string | null)?.trim() || undefined;
+    const subject = (formData.get("subject") as string).trim();
     const date = (formData.get("date") as string).trim();
     const time = (formData.get("time") as string).trim();
-    const remarks = addRemarks;
+    const remarks = (formData.get("remarks") as string).trim();
 
     if (!name) {
       toast({ title: "Full name is required", variant: "destructive" });
       return;
     }
 
-    const status = remarks === "ABSENT" ? "OUT" : "IN";
-
     createStudent.mutate({
       data: {
         name,
         block: block || "TBD",
         room: room || "TBD",
-        course: "TBD",
-        yearLevel: yearLevel || undefined,
+        course: subject || "TBD",
         date: date || todayPH,
         time: time || "N/A",
-        status,
-        remarks,
+        status: "N/A",
+        remarks: remarks || "—",
       }
     }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetStudentSummaryQueryKey() });
         setAddOpen(false);
-        setAddRemarks("PRESENT");
+        setAddRemarks("");
         (e.target as HTMLFormElement).reset();
         toast({ title: "Student added successfully" });
       },
@@ -410,13 +391,12 @@ export default function Dashboard() {
               <TableRow className="hover:bg-transparent">
                 <TableHead className="font-semibold text-slate-600 h-12">Name</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Block</TableHead>
-                <TableHead className="font-semibold text-slate-600 h-12">Course</TableHead>
+                <TableHead className="font-semibold text-slate-600 h-12">Subject</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Room</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Date</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Time</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Status</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-12">Remarks</TableHead>
-                <TableHead className="text-right font-semibold text-slate-600 h-12 no-print">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -444,7 +424,7 @@ export default function Dashboard() {
                       </button>
                     </TableCell>
                     <TableCell className="text-slate-600">{student.block}</TableCell>
-                    <TableCell className="text-slate-600">
+                  <TableCell className="text-slate-600">
                       <div className="flex items-center gap-1.5">
                         <BookOpen className="h-3.5 w-3.5 text-slate-400 no-print" />
                         {student.course}
@@ -457,26 +437,6 @@ export default function Dashboard() {
                     <TableCell className="text-slate-600 whitespace-nowrap">{student.time}</TableCell>
                     <TableCell>{getStatusBadge(student.status)}</TableCell>
                     <TableCell>{getRemarksBadge(student.remarks)}</TableCell>
-                    <TableCell className="text-right no-print">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-primary/10"
-                          onClick={() => setEditingStudent(student)}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
-                          onClick={() => handleDelete(student.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -492,7 +452,7 @@ export default function Dashboard() {
       </div>
 
       {/* Add Teacher Dialog */}
-      <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) setAddRemarks("PRESENT"); }}>
+      <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) setAddRemarks(""); }}>
         <DialogContent className="sm:max-w-[500px]">
           <form onSubmit={handleAdd}>
             <DialogHeader>
