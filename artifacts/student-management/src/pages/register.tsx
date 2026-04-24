@@ -47,7 +47,6 @@ export default function Register() {
       data: {
         ...data,
         status: "N/A",
-        remarks: "NEWLY REGISTERED",
         block: "TBD",
         course: "TBD",
         room: "TBD",

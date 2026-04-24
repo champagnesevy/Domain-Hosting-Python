@@ -113,7 +113,7 @@ router.post("/", async (req, res) => {
       date: providedDate && providedDate.length > 0 ? providedDate : todayPH,
       time: timeValue,
       status: chosenStatus,
-      remarks: parsed.data.remarks ?? "NEWLY REGISTERED",
+      remarks: parsed.data.remarks,
     })
     .returning();
 

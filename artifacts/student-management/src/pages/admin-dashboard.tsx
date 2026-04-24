@@ -39,7 +39,7 @@ export default function AdminDashboard() {
     const date = (formData.get("date") as string | null)?.trim() || todayPH;
     const time = (formData.get("time") as string | null)?.trim() || "N/A";
     const status = (formData.get("status") as string | null)?.trim() || "Present";
-    const remarks = (formData.get("remarks") as string | null)?.trim() || "NEWLY REGISTERED";
+    const remarks = (formData.get("remarks") as string | null)?.trim() || undefined;
     createStudent.mutate(
       { data: { name, block, room, course: subject, courseCode, date, time, status: status as any, remarks } },
       {
@@ -91,7 +91,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label htmlFor="add-subject">Subject</Label><Input id="add-subject" name="subject" placeholder="e.g. Mathematics" /></div><div className="grid gap-2"><Label htmlFor="add-course-code">Course Code</Label><Input id="add-course-code" name="courseCode" placeholder="e.g. MATH101" /></div></div>
               <div className="grid gap-2"><Label htmlFor="add-status">Status</Label><Select name="status" defaultValue="Present"><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent>{statusOptions.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent></Select></div>
               <div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label htmlFor="add-date">Date</Label><Input id="add-date" name="date" type="date" defaultValue={todayPH} max={todayPH} /></div><div className="grid gap-2"><Label htmlFor="add-time">Time</Label><Input id="add-time" name="time" placeholder="e.g. 9:00 AM" /></div></div>
-              <div className="grid gap-2"><Label htmlFor="add-remarks">Remarks</Label><Input id="add-remarks" name="remarks" placeholder="Optional remarks" defaultValue="NEWLY REGISTERED" /></div>
+              <div className="grid gap-2"><Label htmlFor="add-remarks">Remarks</Label><Input id="add-remarks" name="remarks" placeholder="Optional remarks" /></div>
             </div>
             <DialogFooter><Button type="button" variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button><Button type="submit" disabled={createStudent.isPending}>{createStudent.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Add Teacher</Button></DialogFooter>
           </form>

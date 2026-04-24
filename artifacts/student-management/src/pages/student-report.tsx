@@ -159,7 +159,7 @@ export default function StudentReport() {
       courseCode: data.course,
       room: data.room,
       status: data.status,
-      remarks: data.remarks?.trim() || data.status,
+      remarks: data.remarks?.trim() || undefined,
     };
     createStudent.mutate(
       { data: payload },

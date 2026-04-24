@@ -45,7 +45,6 @@ export default function AdminRegister() {
       data: {
         ...data,
         status: "N/A",
-        remarks: "NEWLY REGISTERED",
         block: "TBD",
         course: "TBD",
         room: "TBD",
