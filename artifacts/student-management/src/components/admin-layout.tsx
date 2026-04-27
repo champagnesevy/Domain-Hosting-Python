@@ -12,7 +12,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navigation = [
-    { name: "Student Names", href: "/admin", icon: Shield },
+    { name: "Dashboard", href: "/admin", icon: Shield },
     { name: "Registrations", href: "/admin/register", icon: UserPlus },
   ];
 

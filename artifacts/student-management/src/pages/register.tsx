@@ -77,7 +77,7 @@ export default function Register() {
         <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-6">
           <CardTitle className="text-xl flex items-center text-primary">
             <UserPlus className="mr-2 h-5 w-5" />
-            Student Details
+            Teacher Details
           </CardTitle>
           <CardDescription>
             Provide the required contact and academic information.
