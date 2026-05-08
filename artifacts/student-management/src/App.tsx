@@ -8,6 +8,7 @@ import { AdminLayout } from "@/components/admin-layout";
 import Dashboard from "@/pages/dashboard";
 import Register from "@/pages/register";
 import Report from "@/pages/report";
+import Teachers from "@/pages/teachers";
 import StudentReport from "@/pages/student-report";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminRegister from "@/pages/admin-register";
@@ -62,6 +63,7 @@ function Router() {
             <Switch>
               <Route path="/" component={Dashboard} />
               <Route path="/register" component={Register} />
+              <Route path="/teachers" component={Teachers} />
               <Route path="/report" component={Report} />
               <Route component={NotFound} />
             </Switch>

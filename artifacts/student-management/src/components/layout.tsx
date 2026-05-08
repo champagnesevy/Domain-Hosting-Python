@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Users, UserPlus, GraduationCap, ExternalLink, Lock, Menu, X, LogOut, User } from "lucide-react";
+import { Users, UserPlus, GraduationCap, ExternalLink, Lock, Menu, X, LogOut, User, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getUser, clearToken, getToken } from "@/lib/auth";
 
@@ -30,7 +30,8 @@ export function Layout({ children }: LayoutProps) {
 
   const navigation = [
     { name: "Dashboard", href: "/", icon: Users },
-    { name: "Registrations", href: "/register", icon: UserPlus },
+    { name: "Register Teacher", href: "/register", icon: UserPlus },
+    { name: "Teacher Accounts", href: "/teachers", icon: ShieldCheck },
   ];
 
   const close = () => setSidebarOpen(false);
