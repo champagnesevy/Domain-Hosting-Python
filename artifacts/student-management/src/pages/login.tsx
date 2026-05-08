@@ -102,11 +102,6 @@ export default function Login() {
           </form>
         </div>
 
-        <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
-          <div className="font-semibold mb-0.5">Default account</div>
-          <div>Email: <span className="font-mono">admin@facultydesk.com</span></div>
-          <div>Password: <span className="font-mono">Admin1234</span></div>
-        </div>
       </div>
     </div>
   );

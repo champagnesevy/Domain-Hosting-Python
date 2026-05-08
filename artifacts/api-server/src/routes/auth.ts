@@ -8,16 +8,16 @@ import { getDailyPin } from "../lib/pin";
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET ?? "faculty-desk-jwt-secret-2026";
 
-function signToken(teacher: { id: number; name: string; email: string }) {
+function signToken(teacher: { id: number; name: string; email: string; role: string }) {
   return jwt.sign(
-    { id: teacher.id, name: teacher.name, email: teacher.email },
+    { id: teacher.id, name: teacher.name, email: teacher.email, role: teacher.role },
     JWT_SECRET,
     { expiresIn: "7d" },
   );
 }
 
-function verifyToken(token: string): { id: number; name: string; email: string } {
-  return jwt.verify(token, JWT_SECRET) as { id: number; name: string; email: string };
+function verifyToken(token: string): { id: number; name: string; email: string; role: string } {
+  return jwt.verify(token, JWT_SECRET) as { id: number; name: string; email: string; role: string };
 }
 
 router.post("/auth/register", async (req, res) => {
@@ -37,7 +37,7 @@ router.post("/auth/register", async (req, res) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const [teacher] = await db
     .insert(teachersTable)
-    .values({ name: name.trim(), email: email.toLowerCase().trim(), passwordHash })
+    .values({ name: name.trim(), email: email.toLowerCase().trim(), passwordHash, role: "teacher" })
     .returning();
   const token = signToken(teacher);
   res.status(201).json({ token, teacher: { id: teacher.id, name: teacher.name, email: teacher.email } });
@@ -53,7 +53,30 @@ router.post("/auth/login", async (req, res) => {
     .select()
     .from(teachersTable)
     .where(eq(teachersTable.email, email.toLowerCase().trim()));
-  if (!teacher) {
+  if (!teacher || teacher.role !== "admin") {
+    res.status(401).json({ message: "Invalid email or password" });
+    return;
+  }
+  const valid = await bcrypt.compare(password, teacher.passwordHash);
+  if (!valid) {
+    res.status(401).json({ message: "Invalid email or password" });
+    return;
+  }
+  const token = signToken(teacher);
+  res.json({ token, teacher: { id: teacher.id, name: teacher.name, email: teacher.email } });
+});
+
+router.post("/auth/login-teacher", async (req, res) => {
+  const { email, password } = req.body as { email?: string; password?: string };
+  if (!email?.trim() || !password?.trim()) {
+    res.status(400).json({ message: "Email and password are required" });
+    return;
+  }
+  const [teacher] = await db
+    .select()
+    .from(teachersTable)
+    .where(eq(teachersTable.email, email.toLowerCase().trim()));
+  if (!teacher || teacher.role !== "teacher") {
     res.status(401).json({ message: "Invalid email or password" });
     return;
   }

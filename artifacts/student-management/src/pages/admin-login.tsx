@@ -19,7 +19,7 @@ export default function AdminLogin() {
     if (!email.trim() || !password.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/auth/login-teacher", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), password }),
