@@ -8,7 +8,6 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "wouter";
 import {
   Loader2,
   ClipboardCheck,
@@ -22,7 +21,6 @@ import {
   Lock,
   Eye,
   EyeOff,
-  LayoutDashboard,
   Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -111,17 +109,9 @@ function PinGate({ onUnlock }: { onUnlock: () => void }) {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <header className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-2xl mx-auto px-6 h-16 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <GraduationCap className="h-6 w-6 text-primary" />
-            <span className="font-semibold text-slate-800 text-lg tracking-tight">Teacher Attendance Report</span>
-          </div>
-          <Link href="/report">
-            <button className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors px-2 py-1 rounded hover:bg-slate-100">
-              <LayoutDashboard className="h-3.5 w-3.5" />
-              Teacher Report
-            </button>
-          </Link>
+        <div className="max-w-2xl mx-auto px-6 h-16 flex items-center gap-3">
+          <GraduationCap className="h-6 w-6 text-primary" />
+          <span className="font-semibold text-slate-800 text-lg tracking-tight">Teacher Attendance Report</span>
         </div>
       </header>
       <main className="flex-1 flex items-center justify-center p-6">
@@ -195,7 +185,7 @@ export default function StudentReport() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="bg-white border-b border-slate-200 shadow-sm"><div className="max-w-2xl mx-auto px-6 h-16 flex items-center justify-between gap-3"><div className="flex items-center gap-3"><GraduationCap className="h-6 w-6 text-primary" /><span className="font-semibold text-slate-800 text-lg tracking-tight">Teacher Attendance Report</span></div><Link href="/report"><button className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors px-2 py-1 rounded hover:bg-slate-100"><LayoutDashboard className="h-3.5 w-3.5" />Teacher Report</button></Link></div></header>
+      <header className="bg-white border-b border-slate-200 shadow-sm"><div className="max-w-2xl mx-auto px-6 h-16 flex items-center gap-3"><GraduationCap className="h-6 w-6 text-primary" /><span className="font-semibold text-slate-800 text-lg tracking-tight">Teacher Attendance Report</span></div></header>
       <main className="flex-1 flex items-start justify-center p-6 pt-10">
         <div className="w-full max-w-2xl">
           <div className="mb-6"><h1 className="text-2xl font-bold text-slate-900">Daily Attendance Report</h1><p className="text-slate-500 mt-1 text-sm">Please fill in all required fields and submit your attendance information.</p></div>
