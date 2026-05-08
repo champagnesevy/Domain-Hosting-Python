@@ -1,4 +1,5 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,38 +11,62 @@ import Report from "@/pages/report";
 import StudentReport from "@/pages/student-report";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminRegister from "@/pages/admin-register";
+import Login from "@/pages/login";
+import AdminLogin from "@/pages/admin-login";
 import NotFound from "@/pages/not-found";
+import { isAuthenticated } from "@/lib/auth";
 
 const queryClient = new QueryClient();
+
+function RequireAuth({ children, redirect }: { children: React.ReactNode; redirect: string }) {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      setLocation(redirect);
+    }
+  }, []);
+  if (!isAuthenticated()) return null;
+  return <>{children}</>;
+}
 
 function Router() {
   return (
     <Switch>
-      {/* Standalone student-facing page — no admin sidebar */}
+      {/* Standalone student-facing page — PIN protected, no login needed */}
       <Route path="/student-report" component={StudentReport} />
 
-      {/* Admin-only routes — limited access */}
+      {/* Auth pages */}
+      <Route path="/login" component={Login} />
+      <Route path="/admin/login" component={AdminLogin} />
+
+      {/* Admin routes — require login */}
       <Route path="/admin/register">
-        <AdminLayout>
-          <AdminRegister />
-        </AdminLayout>
+        <RequireAuth redirect="/admin/login">
+          <AdminLayout>
+            <AdminRegister />
+          </AdminLayout>
+        </RequireAuth>
       </Route>
       <Route path="/admin">
-        <AdminLayout>
-          <AdminDashboard />
-        </AdminLayout>
+        <RequireAuth redirect="/admin/login">
+          <AdminLayout>
+            <AdminDashboard />
+          </AdminLayout>
+        </RequireAuth>
       </Route>
 
-      {/* Super admin routes — full access with sidebar */}
+      {/* Main dashboard routes — require login */}
       <Route>
-        <Layout>
-          <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/register" component={Register} />
-            <Route path="/report" component={Report} />
-            <Route component={NotFound} />
-          </Switch>
-        </Layout>
+        <RequireAuth redirect="/login">
+          <Layout>
+            <Switch>
+              <Route path="/" component={Dashboard} />
+              <Route path="/register" component={Register} />
+              <Route path="/report" component={Report} />
+              <Route component={NotFound} />
+            </Switch>
+          </Layout>
+        </RequireAuth>
       </Route>
     </Switch>
   );
