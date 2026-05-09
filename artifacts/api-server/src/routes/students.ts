@@ -121,6 +121,7 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/stats/summary", async (_req, res) => {
+  const today = getTodayPH();
   const [result] = await db
     .select({
       total: sql<number>`count(*)::int`,
@@ -128,13 +129,15 @@ router.get("/stats/summary", async (_req, res) => {
       absent: sql<number>`sum(case when status ILIKE 'absent%' then 1 else 0 end)::int`,
       late: sql<number>`sum(case when status ILIKE 'late%' then 1 else 0 end)::int`,
     })
-    .from(studentsTable);
+    .from(studentsTable)
+    .where(eq(studentsTable.date, today));
 
   res.json({
     total: result.total ?? 0,
     present: result.present ?? 0,
     absent: result.absent ?? 0,
     late: result.late ?? 0,
+    date: today,
   });
 });
 
