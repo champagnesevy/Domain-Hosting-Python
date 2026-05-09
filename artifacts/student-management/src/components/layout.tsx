@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Users, UserPlus, GraduationCap, ExternalLink, Lock, Menu, X, LogOut, User, ShieldCheck } from "lucide-react";
+import { Users, UserPlus, GraduationCap, Lock, Menu, X, LogOut, User, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getUser, clearToken, getToken } from "@/lib/auth";
 
@@ -99,18 +99,6 @@ export function Layout({ children }: LayoutProps) {
         </nav>
 
         <div className="p-4 border-t border-sidebar-border/50 space-y-2 shrink-0">
-          <Link href="/student-report" onClick={close}>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all cursor-pointer border border-sidebar-border/40">
-              <ExternalLink className="h-3.5 w-3.5 opacity-70 shrink-0" />
-              Student Beadle Report Form
-            </div>
-          </Link>
-          <Link href="/admin" onClick={close}>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all cursor-pointer border border-sidebar-border/40">
-              <ExternalLink className="h-3.5 w-3.5 opacity-70 shrink-0" />
-              Admin Panel
-            </div>
-          </Link>
           <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-sidebar-border/40 bg-sidebar-accent/20">
             <Lock className="h-3.5 w-3.5 text-sidebar-foreground/60 shrink-0" />
             <div className="flex-1 min-w-0">
